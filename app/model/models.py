@@ -84,3 +84,4 @@ class TUser(Base):
     credit = Column(Integer, nullable=False, server_default=text("'10'"))
     active_value = Column(Integer, nullable=False, server_default=text("'0'"))
     avatar = Column(BigInteger)
+    is_activated = Column(String(1), nullable=False, server_default=text("'y'"))

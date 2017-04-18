@@ -56,12 +56,14 @@ def insert_new_activity(activity):
 check_user_name('fsx')
 check_user_phone('123456')
 check_user_mail('123@qq.com') 
-#
-new_user = {"name" : 'f5d', "password" : '123456', "mail" : '53@qq.com',
+#sex: 'm' or 'f'
+#is_activated: 'n' or 'y', optional
+new_user = {"name" : 'f5d8', "password" : '123456', "mail" : '153@qq.com',
             "phone" : '123456', "stu_id" : '123456', "college": '北交大',
-            "profession": 'xxx', "sex": 'm', "birthdate": "1996-01-01"}
+            "profession": 'xxx', "sex": 'm', "birthdate": "1996-01-01", "is_activated":'n'}
 insert_new_user(new_user)
 
+'''
 #insert a new group
 new_group1 = {"name": 'xx读书会', "type" : 1, "description": "用户自定义组", "create_date": "2017-04-01"}
 new_group2 = {"name": '篮球', "description": "系统自定义组", "create_date": "2017-04-01"}
@@ -77,3 +79,4 @@ activity = {"name": '新活动', "publisher": 8, "group_id": 1, "description": '
             "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
             "join_ids":'1,5,8', "tags":'聚餐,交友', "is_canceled": 0}
 insert_new_activity(activity)
+'''

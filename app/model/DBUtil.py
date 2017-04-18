@@ -76,10 +76,10 @@ class DBUtil:
         tb = TUser.__table__
         pcolumns = [tb.c.id, tb.c.name, tb.c.password, tb.c.mail, tb.c.phone,
                     tb.c.stu_id, tb.c.college, tb.c.profession, tb.c.sex, 
-                    tb.c.birthdate, tb.c.avatar]
+                    tb.c.birthdate, tb.c.avatar, tb.c.is_activated]
         vals = [ literal(None), literal(args['name']), literal(args['password']), literal(args['mail']),
                   literal(args['phone']), literal(args['stu_id']), literal(args['college']),
-                  literal(args['profession']), literal(args['sex']), literal(args['birthdate']),literal(args['avatar'])]
+                  literal(args['profession']), literal(args['sex']), literal(args['birthdate']),literal(args['avatar']), literal(args['is_activated'])]
         sel = select(vals).\
             where(~exists(select(
                 [tb.c.id],
@@ -165,7 +165,7 @@ class DBUtil:
                           name=args['name'], password=args['password'], mail=args['mail'],
                           phone=args['phone'], stu_id=args['stu_id'], college=args['college'],
                           profession=args['profession'], sex=args['sex'], 
-                          birthdate=args['birthdate'], avatar=args.get('avatar'))
+                          birthdate=args['birthdate'], avatar=args.get('avatar'), is_activated=args.get('is_activated'))
 
     #param 'args': a dict of group propertities
     #return a tuple <groupid, error>
