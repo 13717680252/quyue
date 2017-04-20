@@ -53,6 +53,38 @@ def insert_new_activity(activity):
     else:
         print("The activity is failed to be added!", activity)
 
+
+def insert_new_comment_acticity(comment):
+    cid, exp = DBUtil.insert_new_comment_activity(comment)
+    if cid is not 0:
+        print("A new commnet has been added, id is '%d'" % cid, comment)
+    else:
+        print("The comment failed to be added!", comment)
+
+
+def insert_new_comment_person(comment):
+    cid, exp = DBUtil.insert_new_comment_person(comment)
+    if cid is not 0:
+        print("A new comment of the person has been added, is is '%d'" % cid, comment)
+    else:
+        print("The comment failed to be added!", comment)
+
+def get_friendslist(user_id):
+    friendslist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
+    if friendslist is not None:
+        print("Got the friends list of user '%d': '%s'!" % (user_id, friendslist))
+    else:
+        print("Failed to get the friends list of user '%d'!" % user_id)
+
+
+def add_friends(user_id, friends):
+    ok, exp = DBUtil.update_user_friends(user_id, friends)
+    if ok:
+        print("New friends are added for user '%d'!" % user_id, friends)
+    else:
+        print("Failed to add friends for user '%d'!" % user_id, friends)
+
+'''
 check_user_name('fsx')
 check_user_phone('123456')
 check_user_mail('123@qq.com') 
@@ -63,7 +95,6 @@ new_user = {"name" : 'f5d8', "password" : '123456', "mail" : '153@qq.com',
             "profession": 'xxx', "sex": 'm', "birthdate": "1996-01-01", "is_activated":'n'}
 insert_new_user(new_user)
 
-'''
 #insert a new group
 new_group1 = {"name": 'xx读书会', "type" : 1, "description": "用户自定义组", "create_date": "2017-04-01"}
 new_group2 = {"name": '篮球', "description": "系统自定义组", "create_date": "2017-04-01"}
@@ -79,4 +110,28 @@ activity = {"name": '新活动', "publisher": 8, "group_id": 1, "description": '
             "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
             "join_ids":'1,5,8', "tags":'聚餐,交友', "is_canceled": 0}
 insert_new_activity(activity)
+'''
+
+#day 04-20
+#insert a new commnet of the activity
+'''
+new_commentOfActivity = {"act_id": 1, "user_id": 2, "level": 2, "content": 'xxx'}
+insert_new_comment_acticity(new_commentOfActivity)
+'''
+
+
+#insert a new commnet of the person
+'''
+new_commnetOfPerson = {"act_id": 1, "comm_user_id": 1, "commed_user_id": 8, "level": 5, "content": "Karl is a kind person"}
+insert_new_comment_person(new_commnetOfPerson)
+'''
+
+#retrieve the friends list of a user
+'''
+get_friendslist(4)
+'''
+
+#add friends
+'''
+add_friends(4, ['1', '8', '9'])
 '''
