@@ -1,5 +1,5 @@
 from flask import Blueprint
-
+from app.model.DBUtil import *
 vgroup=Blueprint('vgroup',__name__)
 @vgroup.route('/get_activity_list/<group_id>')
 def getActList(group_id):
@@ -17,4 +17,8 @@ def focusGroup(user_id):
 def cancelFocused(user_id):
     pass
 
+#
+@vgrop.route('/addgroup')
+def addgroup():
+    pass
 

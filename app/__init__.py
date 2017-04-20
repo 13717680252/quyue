@@ -1,7 +1,6 @@
 from flask import Flask
 import pymysql
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+pymysql.install_as_MySQLdb()
 from app.view.friend_views import *
 from app.view.activity_views import *
 from app.view.common_views import *
@@ -19,13 +18,6 @@ app.register_blueprint(vgroup)
 app.register_blueprint(vpic)
 app.register_blueprint(vuser)
 
-db= connection = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='hos950928',
-                                 db='bat',
-                                 port=3306,
-                                 charset='utf8')
 
 
 from app.view import *
-from app import  model

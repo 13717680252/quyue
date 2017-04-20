@@ -13,7 +13,7 @@ def getCreditList(user_id):
 def changePassword(user_id):
     pass
 
-@vuser.route('/change_email/<user_id>')
-def changeEmail(user_id):
+@vuser.route('/change_my_info/<user_id>')
+def changeInfo(user_id):
     pass
 
