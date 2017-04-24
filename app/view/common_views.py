@@ -26,9 +26,8 @@ def register():
         if uid is not 0:
             print("user is created, id is '%d'" % uid)
             dict2 = {'status': '1', 'userid': uid,'errcode':'null'};
-
         else:
-            dict2 = {'status': '0', 'userid': -1,'errcode':'failed'};
+            dict2 = {'status': '0', 'userid': -1,'errcode':exp};
         return json.dumps(dict2)
     else:
         return '400'

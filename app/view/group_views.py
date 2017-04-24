@@ -18,7 +18,7 @@ def cancelFocused(user_id):
     pass
 
 #
-@vgrop.route('/addgroup')
+@vgroup.route('/addgroup')
 def addgroup():
     pass
 

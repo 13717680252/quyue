@@ -32,7 +32,7 @@ def admitAct():
             print("user is created, id is '%d'" % actid)
             dict2 = {'status': '1', 'actid':actid, 'errcode': 'null'};
         else:
-            dict2 = {'status': '0', 'actid': -1, 'errcode': 'failed'};
+            dict2 = {'status': '0', 'actid': -1, 'errcode': exp};
         return json.dumps(dict2)
     else:
         return '400'
