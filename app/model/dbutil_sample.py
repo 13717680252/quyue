@@ -84,6 +84,27 @@ def add_friends(user_id, friends):
     else:
         print("Failed to add friends for user '%d'!" % user_id, friends)
 
+
+def check_user_login(mail, psw):
+    ismatched, exp = DBUtil.check_user_mail_and_psw(mail, psw)
+    if ismatched:
+        print("User : %s login with valid password '%s'!" % (mail, psw))
+    else:
+        print("Login failed!!!Please handle with login error!", exp)
+        #code to handle
+        pass
+
+
+def check_mail_activate(mail):
+    ok, exp = DBUtil.check_mail_activate(mail)
+    if ok:
+        print("Mail '%s' is activated!" % mail)
+    else:
+        print("Mail '%s' is not activated!" % mail, exp)
+        pass
+
+
+
 '''
 check_user_name('fsx')
 check_user_phone('123456')
@@ -135,3 +156,12 @@ get_friendslist(4)
 '''
 add_friends(4, ['1', '8', '9'])
 '''
+
+#chcek user "153@qq.com"'s password
+check_user_login("153@qq.com", "123456")
+
+#update user "153@qq.com"'s mail state to a activated state
+DBUtil.update_user_mail_state("153@qq.com", True)
+
+#check whether mail "153@qq.com" is activated
+check_mail_activate("153@qq.com")
