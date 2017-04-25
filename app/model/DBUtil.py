@@ -77,6 +77,29 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_check_user_mail_and_psw(ss, args):
+        mail = args['mail']
+        psw = args['psw']
+        try:
+            rs = ss.query(TUser.id).filter(TUser.mail == mail and TUser.password == psw).limit(1).count()
+        except Exception as e:
+            print(e)
+            return False, e
+        return True, None
+
+
+    @staticmethod
+    def __util_check_mail_activate(ss, args):
+        mail = args['mail']
+        try:
+            rs = ss.query(TUser.is_activated).filter(TUser.mail == mail).limit(1).one()
+        except Exception as e:
+            print(e)
+            return False, e
+        return (rs[0] == 'y'), None
+
+
+    @staticmethod
     def __util_retrieve_user_friends(ss, args):
         try:
             rs = ss.query(TUser.friends).filter(TUser.id == args['user_id']).first()
@@ -199,6 +222,24 @@ class DBUtil:
         return True, None
 
 
+    @staticmethod
+    def __util_update_user_mail_state(ss, args):
+        if args['state']:
+            ins = 'y'
+        else:
+            ins = 'n'
+        mail = args['mail']
+        try:
+            ss.query(TUser).filter(TUser.mail == mail).update({TUser.is_activated : ins}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False, e
+
+        return True, None
+
+
     #param 'name': the name of user
     #return a tuple <isExisted, error>
     #'isExisted' is a boolean indicates whether the user name is already existed; 
@@ -225,6 +266,28 @@ class DBUtil:
     def check_user_mail_duplicated(mail):
         return DBUtil.exec_query(DBUtil.__util_check_user_mail_duplicate, mail=mail)
 
+
+    @staticmethod
+    def check_user_mail_and_psw(mail, psw):
+       '''
+       :param mail: mail address
+       :param psw: password
+       :return: a tuple <pass, error>
+            'pass' is boolean value indicates that whether mail and psw are matched
+            'error' is the exception when executing the query in the database, None means no exception
+       '''
+       return DBUtil.exec_query(DBUtil.__util_check_user_mail_and_psw, mail=mail, psw=psw)
+
+
+    @staticmethod
+    def check_mail_activate(mail):
+        '''
+        :param mail: mail address
+        :return: a tuple <ok, error>
+            'ok' is boolean value indicates that whether the mail is activated
+            'error' is the exception when executing the query in the database, None means no exception
+        '''
+        return DBUtil.exec_query(DBUtil.__util_check_mail_activate, mail=mail)
 
     #param 'user_id': the id of query user
     #return a tuple <friendslist, error>
@@ -298,3 +361,15 @@ class DBUtil:
     @staticmethod
     def update_user_friends(user_id, new_friends):
         return DBUtil.exec_query(DBUtil.__util_add_user_frends, user_id=user_id, new_friends=new_friends)
+
+
+    @staticmethod
+    def update_user_mail_state(mail, state):
+        '''
+        :param mail: mail address
+        :param state: mail's activate sate, True if activated, False if not activated
+        :return: a tuple <ok, error>
+            'ok': a boolean value indicates whether th update is successful.
+            'error': the exception when executing the query in the database, None means no exception
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_user_mail_state, mail=mail, state=state)
