@@ -8,9 +8,16 @@ from flask import redirect
 from flask import jsonify
 vfriend=Blueprint('vfriend',__name__)
 
-@vfriend.route('/get_friend_list/<user_id>')
+@vfriend.route('/get_friend_list/<user_id>',methon=['POST'])
 def getFriendList(user_id):
-    pass
+    if request.method == 'POST':
+        a = request.get_data()
+        dict = json.loads(a)
+        friendlist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
+        dict2 = {'status': '1', 'friendlist': friendlist, 'errcode': exp};
+        return json.dumps(dict2)
+    else:
+        return '400'
 
 @vfriend.route('/send_text')
 def sendText():
