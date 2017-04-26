@@ -10,7 +10,7 @@ from app.model.DBUtil import *
 vcomment = Blueprint('vcommon', __name__)
 
 
-@vcomment.route('/commit_comment')
+@vcomment.route('/commit_comment',methods=['POST'] )
 def commit_comment():
     if request.method == 'POST':
         c_request = request.get_data()
@@ -26,7 +26,7 @@ def commit_comment():
         return '400'
 
 
-@vcomment.route('/commit_person_comment')
+@vcomment.route('/commit_person_comment',methods=['POST'] )
 def commit_comment_person():
     if request.method == 'POST':
         c_request = request.get_data()

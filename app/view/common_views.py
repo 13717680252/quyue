@@ -7,7 +7,7 @@ from flask import jsonify
 from app.utils import send_message
 from app.model.DBUtil import *
 vcommon=Blueprint('vcommon',__name__)
-@vcommon.route('/register' )
+@vcommon.route('/register',methods=['POST'] )
 def register():
     if request.method == 'POST':
         a = request.get_data()
@@ -19,6 +19,8 @@ def register():
             return json.dumps(dict2)
         uid, exp = DBUtil.insert_new_user(dict)
         ret=send_message.mail(userid=dict['name'], receiver=dict['mail'])
+        dict["is_activated"]='n'
+
         if not ret:
             print("the email might not be right")
             dict2 = {'status': '0', 'userid': -1, 'errcode': 'wrong email'};
@@ -31,17 +33,26 @@ def register():
         return json.dumps(dict2)
     else:
         return '400'
+'''注册用路由 接受json格式如下测试'''
 
-
-@vcommon.route('/login')
+@vcommon.route('/login',methods=['POST'])
 def login():
-    return("successful")
+    a = request.get_data()
+    dict = json.loads(a)
+    ismatched, exp = DBUtil.check_user_mail_and_psw(dict['name'],dict['password'])
+    if ismatched:
+        dict2={'status':1,'username':dict['name'],'errorcode':exp}
+    else:
+        dict2 = {'status': 0, 'username': dict['name'], 'errorcode': exp}
+    return json.dumps(dict2)
 
 @vcommon.route('/activate/<token>')
 def activate(token):
      email = send_message.confirm_token(token)
-     #need to change the database due to the emailaddress
-     return(email)
+     state,exp=DBUtil.update_user_mail_state(email, True)
+     if state:
+      return(email+' activated')
+     else: return('false '+exp)
 
 
 from app.utils import send_message
@@ -50,6 +61,17 @@ def testmail():
     ret=send_message.mail(1001,'1271369334@qq.com')
     return ('true')
 
+
+@vcommon.route('/test')
+def testdb():
+    isexcited, exp = DBUtil.check_user_mail_duplicated('123.qq.com')
+    print(isexcited)
+    new_user = {"name": 'wangtianran', "password": '123456', "mail": '1271369334@qq.com',
+                "phone": '1008600', "stu_id": '14301020', "college": '北交大',
+                "profession": 'xxx', "sex": 'm', "birthdate": "1996-01-01", "is_activated": 'n'}
+    uid, exp = DBUtil.insert_new_user(new_user)
+    print(exp)
+    return('testing page')
 
 
 

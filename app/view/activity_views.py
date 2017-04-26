@@ -22,7 +22,7 @@ def getUserActList(user_id):
 def getPastActList(user_id):
     pass
 
-@vactivity.route('/admit_activity/')
+@vactivity.route('/admit_activity/',methods=['POST'] )
 def admitAct():
     if request.method == 'POST':
         c_request = request.get_data()
