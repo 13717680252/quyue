@@ -6,6 +6,7 @@ Created on 2017年4月16日
 
 from DBUtil import DBUtil
 from datetime import  datetime
+from datetime import  timedelta
 import  time
 
 def check_user_name(name):
@@ -104,6 +105,24 @@ def check_mail_activate(mail):
         pass
 
 
+def join_activity(user_id, activity_id_list):
+    DBUtil.join_activity(user_id, activity_id_list)
+
+
+def get_user_activities(user_id):
+    activities = DBUtil.retrieve_user_activities(user_id)
+    for act in activities:
+        print('activitiy name: ', act.name)
+
+
+
+def exit_activites(user_id, activities):
+    ret = DBUtil.remove_user_activities(user_id, activities)
+    if ret == len(activities):
+        print("Successfully remove activities of user '%s'. Activities: " % user_id, activities)
+    else:
+        print("Failed to remove activities of user %s. Activities: " % user_id, activities)
+
 
 '''
 check_user_name('fsx')
@@ -157,11 +176,26 @@ get_friendslist(4)
 add_friends(4, ['1', '8', '9'])
 '''
 
-#chcek user "153@qq.com"'s password
-check_user_login("153@qq.com", "123456")
+# #chcek user "153@qq.com"'s password
+# check_user_login("153@qq.com", "123456")
 
-#update user "153@qq.com"'s mail state to a activated state
-DBUtil.update_user_mail_state("153@qq.com", True)
+# #update user "153@qq.com"'s mail state to a activated state
+# DBUtil.update_user_mail_state("153@qq.com", True)
 
-#check whether mail "153@qq.com" is activated
-check_mail_activate("153@qq.com")
+# #check whether mail "153@qq.com" is activated
+# check_mail_activate("153@qq.com")
+
+# # join an actitities
+# join_activity('4', ['1'])
+
+# #get activities which user with id '4' joined
+# get_user_activities('4')
+
+# exits activities
+# exit_activites('4', ['1'])
+
+# make attention to groups
+# print(DBUtil.add_user_group('4', ['7']))
+
+# retrievie activities 5 days before by group which those belong to
+# print(DBUtil.retrieve_activitiy_by_group('1', datetime.now() - timedelta(days=5), 5))
