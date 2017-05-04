@@ -10,6 +10,8 @@ from app.model.models import TUser, TGroup, TActivity, TCommentActivity, TCommne
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.expression import exists, select
 from sqlalchemy.sql.elements import or_, literal
+import redis
+
 
 url_host = 'localhost'
 url_port = '3306'
@@ -26,6 +28,13 @@ db_url = (
 engine = create_engine(db_url, encoding='utf8')
 # 创建DBSession类型:
 DBSession = sessionmaker(bind=engine)
+#
+#redis key patterns
+k_user_act = "user:%s:activities"   #actviites which the user joined
+k_user_group = "user:%s:groups"     #groups which the user attention
+
+#redis instance
+rins = redis.Redis(host='localhost', port=6379, password='redis',db=1)
 
 class DBUtil:
     @staticmethod
@@ -42,6 +51,19 @@ class DBUtil:
         rs = handle_func(conn, args)
         conn.close()
         return rs
+
+
+    @staticmethod
+    def __decode_list_with_utf8(blist):
+        '''
+        decode a binary list with utf8
+        :param blist:
+        :return: a list of strings
+        '''
+        ul = []
+        for item in blist:
+            ul.append(item.decode('utf8'))
+        return ul
 
 
     @staticmethod
@@ -80,7 +102,7 @@ class DBUtil:
         mail = args['mail']
         psw = args['psw']
         try:
-            rs = ss.query(TUser.id).filter(TUser.mail == mail and TUser.password == psw).limit(1).count()
+            rs = ss.query(TUser.id).filter(TUser.mail == mail, TUser.password == psw).limit(1).count()
         except Exception as e:
             print(e)
             return False, e
@@ -107,6 +129,53 @@ class DBUtil:
             return None, e
 
         return rs[0], None
+
+
+    @staticmethod
+    def __util_retrieve_activity(ss, args):
+        try:
+            item = ss.query(TActivity).filter(TActivity.id == args['id']).first()
+            ss.expunge(item)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            return None
+
+        return item
+
+
+    @staticmethod
+    def __util_retrieve_group(ss, args):
+        try:
+            group = ss.query(TGroup).filter(TGroup.id == args['id']).first()
+            ss.expunge(group)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return None
+
+        return group
+
+
+    @staticmethod
+    def __util_retrieve_activity_by_group(ss, args):
+        gid = args['group_id']
+        limit = args['limit']
+        after_date = args['after_date']
+        print(after_date)
+        print(type(after_date))
+        try:
+            rs = ss.query(TActivity).filter(TActivity.group_id == gid, TActivity.create_date >= after_date).limit(limit).all()
+            ss.expunge_all()
+            ss.commit()
+        except Exception as e:
+            print(e)
+            return None
+
+        return rs
+
+
 
     @staticmethod
     def __util_insert_new_user(conn, args):
@@ -239,6 +308,15 @@ class DBUtil:
         return True, None
 
 
+    @staticmethod
+    def flush_redis():
+        '''
+        remove all data of redis database, only for test
+        :return:
+        '''
+        rins.flushdb()
+
+
     #param 'name': the name of user
     #return a tuple <isExisted, error>
     #'isExisted' is a boolean indicates whether the user name is already existed;
@@ -297,6 +375,75 @@ class DBUtil:
         return DBUtil.exec_query(DBUtil.__util_retrieve_user_friends, user_id=user_id)
 
 
+    @staticmethod
+    def retrieve_user_activities(user_id):
+        '''
+        get a list of activities which the user joined
+        :param user_id: id of the user
+        :return:  a list of activities
+        '''
+        k = k_user_act % user_id
+        act_ids = DBUtil.__decode_list_with_utf8(rins.smembers(k))
+        activities = []
+        ss = DBSession()
+        for id in act_ids:
+            act = DBUtil.__util_retrieve_activity(ss, {'id': id})
+            if act is not None:
+                activities.append(act)
+        ss.close()
+        return  activities
+
+
+    @staticmethod
+    def retrieve_user_groups(user_id):
+        '''
+        get the groups that the user attention
+        :param user_id: id of the user
+        :return: a list of groups
+        '''
+        gids = DBUtil.__decode_list_with_utf8(rins.smembers(k_user_group % user_id))
+        gl = []
+        ss = DBSession()
+        for id in gids:
+            group = DBUtil.__util_retrieve_group(ss, {'id': id})
+            if group is not None:
+                gl.append(group)
+        ss.close()
+        return gl
+
+
+    @staticmethod
+    def retrieve_activity_by_id(id):
+        '''
+        retrieve a activity by its id
+        :param id: id of the activity
+        :return: an activity if the id is valid or None otherwise
+        '''
+        return  DBUtil.exec_query(DBUtil.__util_retrieve_activity, id=id)
+
+
+    @staticmethod
+    def retrieve_activitiy_by_group(group_id, after_date, limit):
+        '''
+        retrieve a list of activities with max_num by the group id
+        :param group_id: id of refered group
+        :param after_date: a date that activities' published date should be after it
+        :param limit: limit number of activities to be retrieved
+        :return: a list of activities
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_activity_by_group, group_id=group_id, after_date=after_date, limit=limit)
+
+
+    @staticmethod
+    def retrieve_group_by_id(id):
+        '''
+        retrieve a group by its id
+        :param id: id of the group
+        :return: a group
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_group, id = id)
+
+
     #param 'args': a dict of user propertities
     #reutrn a tuple <rowid, error>
     #'rowid' is the last user row id, if not exists, rowid is 0
@@ -341,6 +488,7 @@ class DBUtil:
         return DBUtil.exec_query(DBUtil.__util_insert_activity_comment,
                                  act_id=args['act_id'], user_id=args['user_id'], level=args['level'], content=args['content'])
 
+
     # param 'args': a dict of commentOfPerson properties
     # return a tuple <comment_id, error>
     # 'comment_id' is id of new comment inserted. If failed, commnet_id is 0
@@ -352,13 +500,37 @@ class DBUtil:
                                  level=args['level'], content=args['content'])
 
 
-    #param 'user_id'
-    #param 'new_friends': a str list of user id
-    #return a tuple <ok, error>
-    #'ok': a boolean value indicates whether th update is successful.
-    #'error' is the exception when executing the query in the database, None means no exception
+    @staticmethod
+    def join_activity(user_id, activity_id_list):
+        '''
+        :param user_id:
+        :param activity_id_list:
+        :return:
+        '''
+        k = k_user_act % user_id
+        for id in activity_id_list:
+            rins.sadd(k, id)
+
+
+    @staticmethod
+    def add_user_group(user_id, groups):
+        '''
+        add an id list of groups to user
+        :param groups: an id list
+        :return:  the number of groups that were added, not including the ones that were present
+        '''
+        return rins.sadd(k_user_group % user_id, *groups)
+
+
     @staticmethod
     def update_user_friends(user_id, new_friends):
+        '''
+        :param user_id:
+        :param new_friends: a str list of user id
+        :return: a tuple <ok, error>
+            'ok': a boolean value indicates whether th update is successful.
+            'error' is the exception when executing the query in the database, None means no exception
+        '''
         return DBUtil.exec_query(DBUtil.__util_add_user_frends, user_id=user_id, new_friends=new_friends)
 
 
@@ -372,3 +544,14 @@ class DBUtil:
             'error': the exception when executing the query in the database, None means no exception
         '''
         return DBUtil.exec_query(DBUtil.__util_update_user_mail_state, mail=mail, state=state)
+
+
+    @staticmethod
+    def remove_user_activities(user_id, activity_ids):
+        '''
+        remove a list of activies which the user joined
+        :param user_id: id of the user
+        :param activity_ids: the id list of activities
+        :return:  the number of activities that were removed
+        '''
+        return  rins.srem(k_user_act % user_id, *activity_ids)
