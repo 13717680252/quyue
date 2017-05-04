@@ -14,6 +14,7 @@ def getFriendList(user_id):
         a = request.get_data()
         dict = json.loads(a)
         friendlist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
+
         dict2 = {'status': '1', 'friendlist': friendlist, 'errcode': exp};
         return json.dumps(dict2)
     else:

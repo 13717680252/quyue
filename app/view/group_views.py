@@ -12,13 +12,19 @@ vgroup=Blueprint('vgroup',__name__)
 def getActList(group_id):
     list=DBUtil.retrieve_activitiy_by_group(group_id, datetime.now() - timedelta(days=200), 999)
     ##deal with the list
-    return json.dumps({'status': 1, 'activity_list': list, 'exp': 'none'})
+    list2=[]
+    for act in list:
+        list2.append[act.id]
+    return json.dumps({'status': 1, 'activity_list': list2, 'exp': 'none'})
     pass
 
 @vgroup.route('/get_focused_group_list/<user_id>',method=['POST'])
 def get_focused(user_id):
     group_list=DBUtil.retrieve_user_groups(user_id)
-    dict = {'status': 1, 'group_list': group_list, 'exp': 'none'};
+    list=[]
+    for g in group_list:
+        list.append[g.id]
+    dict = {'status': 1, 'group_list': list, 'exp': 'none'};
     return json.dumps(dict)
 
 @vgroup.route('/admit_focus_group/<user_id>',method=['POST'])
