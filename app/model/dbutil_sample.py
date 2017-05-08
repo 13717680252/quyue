@@ -71,7 +71,7 @@ def insert_new_comment_person(comment):
         print("The comment failed to be added!", comment)
 
 def get_friendslist(user_id):
-    friendslist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
+    friendslist, exp = DBUtil.retrieve_user_friendslist(user_id)
     if friendslist is not None:
         print("Got the friends list of user '%d': '%s'!" % (user_id, friendslist))
     else:
@@ -197,5 +197,34 @@ add_friends(4, ['1', '8', '9'])
 # make attention to groups
 # print(DBUtil.add_user_group('4', ['7']))
 
-# retrievie activities 5 days before by group which those belong to
+# retrieve activities 5 days before by group which those belong to
 # print(DBUtil.retrieve_activitiy_by_group('1', datetime.now() - timedelta(days=5), 5))
+
+# retrieve user's id by his nick name
+# query_name = 'aaa'
+# id = DBUtil.retrieve_userid_by_name(query_name)
+# if id > 0:
+#     print('Found user name ' + query_name + " with id '%d'" % id)
+# else:
+#     print("Name '%s' does not exists!" % query_name)
+
+# retrieve user's id by his mail address
+# query_mail = '124@qq.com'
+# id = DBUtil.retrieve_userid_by_mail(query_mail)
+# if id > 0:
+#     print("Found mail '%s' with id '%d'" % (query_mail, id))
+# else:
+#     print("Mail '%s' does not exists!" % query_mail)
+
+# query user's profile by his user id
+# print(DBUtil.retrieve_userinfo_by_id(4))
+
+# update user profile
+# update_info = {'name' : 'sb', 'sex' : 'f'}
+# update_id = 8
+# ok, err = DBUtil.update_userinfo(update_id, update_info)
+# if ok:
+#     print("Update user '%d' successfully!" % update_id)
+# else:
+#     print("Update user '%d' failed!" % update_id, err)
+
