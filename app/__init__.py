@@ -1,7 +1,7 @@
 from flask import Flask
 import pymysql
 pymysql.install_as_MySQLdb()
-from app.view.friend_views import *
+from app.view.friend_views import vfriend
 from app.view.activity_views import *
 from app.view.common_views import *
 from app.view.group_views import *

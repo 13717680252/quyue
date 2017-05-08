@@ -18,7 +18,7 @@ def getActList(group_id):
     return json.dumps({'status': 1, 'activity_list': list2, 'exp': 'none'})
     pass
 
-@vgroup.route('/get_focused_group_list/<user_id>',method=['POST'])
+@vgroup.route('/get_focused_group_list/<user_id>',methods=['POST'])
 def get_focused(user_id):
     group_list=DBUtil.retrieve_user_groups(user_id)
     list=[]
@@ -27,7 +27,7 @@ def get_focused(user_id):
     dict = {'status': 1, 'group_list': list, 'exp': 'none'};
     return json.dumps(dict)
 
-@vgroup.route('/admit_focus_group/<user_id>',method=['POST'])
+@vgroup.route('/admit_focus_group/<user_id>',methods=['POST'])
 def focusGroup(user_id):
     a = request.get_data()
     dict = json.loads(a)
@@ -35,13 +35,14 @@ def focusGroup(user_id):
     status=DBUtil.add_user_group(user_id,list)
     dict2 = {'status': status, 'group_id': dict['group_id'], 'exp': 'none'};
     return json.dumps(dict2)
-    pass
+
+
 
 @vgroup.route('/cancel_focus_group/<user_id>')
 def cancelFocused(user_id):
     pass
 
-#
+
 @vgroup.route('/addgroup')
 def addgroup():
     pass

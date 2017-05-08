@@ -39,4 +39,4 @@ def commit_comment_person():
             dict2 = {'status': '0', 'comment': -1, 'errcode': exp};
         return json.dumps(dict2)
     else :
-     return '400'
+      return '400'

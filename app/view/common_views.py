@@ -14,7 +14,8 @@ def register():
         dict = json.loads(a)
         isexcited,exp=DBUtil.check_user_mail_duplicated(dict['mail'])
         isexcited2,exp=DBUtil.check_user_name_duplicated(dict['name'])
-        if(isexcited or isexcited2):
+        isexcited3,exp=DBUtil.check_user_phone_duplicated(dict['phone'])
+        if(isexcited or isexcited2 or isexcited3):
             dict2 = {'status': '0', 'userid': -1, 'errcode': 'duplicated'};
             return json.dumps(dict2)
         uid, exp = DBUtil.insert_new_user(dict)

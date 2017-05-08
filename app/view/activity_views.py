@@ -1,24 +1,26 @@
 from flask import Blueprint
 import json
+import datetime
 from flask import Flask
 from flask import request
 from flask import redirect
 from flask import jsonify
 from app.model.DBUtil import *
 from app.model.models import TActivity
+from app.utils import search_server
 vactivity=Blueprint('vactivity',__name__)
 
-@vactivity.route('/get_activity_details/<activity_id>',methon=['POST'])
+@vactivity.route('/get_activity_details/<activity_id>',methods=['POST'])
 def getActDetails(activity_id):
     act=DBUtil.retrieve_activity_by_id(activity_id)
     act_dict={}
     act_dict['id']=act.id
     act_dict['publisher']=act.publisher
     act_dict['group_id']=act.group_id
-    act_dict['description']=act.discption
-    act_dict['create_date']=act.create_date
-    act_dict['start_date']=act.start_date
-    act_dict['end_date']=act.end_date
+    act_dict['description']=act.description
+    act_dict['create_date']= datetime.datetime.strftime(act.create_date, '%Y-%m-%d %H:%M:%S')
+    act_dict['start_date']=datetime.datetime.strftime(act.start_date, '%Y-%m-%d %H:%M:%S')
+    act_dict['end_date']=datetime.datetime.strftime(act.end_date, '%Y-%m-%d %H:%M:%S')
     act_dict['min_num']=act.min_num
     act_dict['max_num']=act.max_num
     act_dict['cur_num']=act.cur_num
@@ -26,11 +28,15 @@ def getActDetails(activity_id):
     act_dict['is_expired']=act.is_expired
     act_dict['tags']=act.tags
     act_dict['is_canceled']=act.is_canceled
-    act_dict['cancel_date']=act.cancel_date
+    if act.is_canceled==0:
+        act_dict['cancel_date']=("2999-12-30 24:60:60")
+    else:
+        act_dict['cancel_date']=datetime.datetime.strftime(act.cancel_date, '%Y-%m-%d %H:%M:%S')
     act_dict['status']=1
     act_dict['exp']='none'
-    return json.dumps[act_dict]
-@vactivity.route('/get_user_activity_list/<user_id>',methon=['POST'])
+    return json.dumps(act_dict)
+
+@vactivity.route('/get_user_activity_list/<user_id>',methods=['POST'])
 def getUserActList(user_id):
     list=[]
     exp='none'
@@ -93,8 +99,20 @@ def quit():
     if len(d_list)>0:
      dict2 = {'status': 1, 'activity_id':d_list[0] , 'exp':exp};
     else:
-     dict2= dict2 = {'status': 1, 'activity_id': -1, 'exp': exp};
+     dict2 = {'status': 1, 'activity_id': -1, 'exp': exp};
     return json.dumps(dict2)
+
+@vactivity.route('/searchact',methods=['POST'])
+def searchact():
+    dict=json.loads(request.get_data())
+    g_id=dict['groupid']
+    list=dict['lables']
+    key=dict['key']
+    ret=search_server.searchactivity(g_id,list,key)
+    dict = {'status': 1, 'activity_id': ret, 'exp': 'none'}
+    return json.dumps(dict)
+
+
 
 @vactivity.route('/get_member_list/<activity_id>')
 def getMemberList(activity_id):

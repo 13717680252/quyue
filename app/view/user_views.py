@@ -3,7 +3,7 @@ from flask import Blueprint
 vuser=Blueprint('vuser',__name__)
 @vuser.route('/get_user_info/<user_id>')
 def getUserInof(user_id):
-  pass
+    return user_id
 
 @vuser.route('/get_credit_list/<user_id>')
 def getCreditList(user_id):

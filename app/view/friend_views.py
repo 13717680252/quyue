@@ -8,14 +8,15 @@ from flask import redirect
 from flask import jsonify
 vfriend=Blueprint('vfriend',__name__)
 
-@vfriend.route('/get_friend_list/<user_id>',methon=['POST'])
+@vfriend.route('/get_friend_list/<user_id>',methods=['POST'])
 def getFriendList(user_id):
     if request.method == 'POST':
         a = request.get_data()
         dict = json.loads(a)
         friendlist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
-
-        dict2 = {'status': '1', 'friendlist': friendlist, 'errcode': exp};
+        friendlist=friendlist.strip()
+        list=friendlist.split(",")
+        dict2 = {'status': '1', 'friendlist': list, 'errcode': exp};
         return json.dumps(dict2)
     else:
         return '400'
@@ -35,10 +36,11 @@ def reply_invitation():
         dict = json.loads(a)
         invitor=dict['invitor']
         receiver=[dict['receiver']]
+        DBUtil.update_user_friend(receiver, invitor)
         status, exp = DBUtil.update_user_friend(invitor,receiver)
         if  status=='ok':
             print("ok!" )
-            dict2 = { 'status': status, 'errcode': 'null'};
+            dict2 = { 'status': status, 'userid':invitor,'errcode': 'null'};
         else:
             dict2 = {'status': status, 'userid': -1, 'errcode':exp};
         return json.dumps(dict2)

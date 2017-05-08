@@ -34,7 +34,7 @@ k_user_act = "user:%s:activities"   #actviites which the user joined
 k_user_group = "user:%s:groups"     #groups which the user attention
 
 #redis instance
-rins = redis.Redis(host='localhost', port=6379, password='redis',db=1)
+rins = redis.Redis(host='localhost', port=6379, password='',db=2)
 
 class DBUtil:
     @staticmethod
