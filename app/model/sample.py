@@ -3,8 +3,9 @@ Created on 2017年4月16日
 @author: KarlMical
 '''
 
-from app.model import DBUtil
+from app.model.DBUtil import DBUtil
 from datetime import  datetime
+from datetime import  timedelta
 import  time
 
 def check_user_name(name):
@@ -69,7 +70,7 @@ def insert_new_comment_person(comment):
         print("The comment failed to be added!", comment)
 
 def get_friendslist(user_id):
-    friendslist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
+    friendslist, exp = DBUtil.retrieve_user_friendslist(user_id)
     if friendslist is not None:
         print("Got the friends list of user '%d': '%s'!" % (user_id, friendslist))
     else:
@@ -82,6 +83,45 @@ def add_friends(user_id, friends):
         print("New friends are added for user '%d'!" % user_id, friends)
     else:
         print("Failed to add friends for user '%d'!" % user_id, friends)
+
+
+def check_user_login(mail, psw):
+    ismatched, exp = DBUtil.check_user_mail_and_psw(mail, psw)
+    if ismatched:
+        print("User : %s login with valid password '%s'!" % (mail, psw))
+    else:
+        print("Login failed!!!Please handle with login error!", exp)
+        #code to handle
+        pass
+
+
+def check_mail_activate(mail):
+    ok, exp = DBUtil.check_mail_activate(mail)
+    if ok:
+        print("Mail '%s' is activated!" % mail)
+    else:
+        print("Mail '%s' is not activated!" % mail, exp)
+        pass
+
+
+def join_activity(user_id, activity_id_list):
+    DBUtil.join_activity(user_id, activity_id_list)
+
+
+def get_user_activities(user_id):
+    activities = DBUtil.retrieve_user_activities(user_id)
+    for act in activities:
+        print('activitiy name: ', act.name)
+
+
+
+def exit_activites(user_id, activities):
+    ret = DBUtil.remove_user_activities(user_id, activities)
+    if ret == len(activities):
+        print("Successfully remove activities of user '%s'. Activities: " % user_id, activities)
+    else:
+        print("Failed to remove activities of user %s. Activities: " % user_id, activities)
+
 
 '''
 check_user_name('fsx')
@@ -131,3 +171,55 @@ get_friendslist(4)
 '''
 add_friends(4, ['1', '8', '9'])
 '''
+
+# #chcek user "153@qq.com"'s password
+# check_user_login("153@qq.com", "123456")
+
+# #update user "153@qq.com"'s mail state to a activated state
+# DBUtil.update_user_mail_state("153@qq.com", True)
+
+# #check whether mail "153@qq.com" is activated
+# check_mail_activate("153@qq.com")
+
+# # join an actitities
+# join_activity('4', ['1'])
+
+# #get activities which user with id '4' joined
+# get_user_activities('4')
+
+# exits activities
+# exit_activites('4', ['1'])
+
+# make attention to groups
+# print(DBUtil.add_user_group('4', ['7']))
+
+# retrieve activities 5 days before by group which those belong to
+# print(DBUtil.retrieve_activitiy_by_group('1', datetime.now() - timedelta(days=5), 5))
+
+# retrieve user's id by his nick name
+# query_name = 'aaa'
+# id = DBUtil.retrieve_userid_by_name(query_name)
+# if id > 0:
+#     print('Found user name ' + query_name + " with id '%d'" % id)
+# else:
+#     print("Name '%s' does not exists!" % query_name)
+
+# retrieve user's id by his mail address
+# query_mail = '124@qq.com'
+# id = DBUtil.retrieve_userid_by_mail(query_mail)
+# if id > 0:
+#     print("Found mail '%s' with id '%d'" % (query_mail, id))
+# else:
+#     print("Mail '%s' does not exists!" % query_mail)
+
+# query user's profile by his user id
+# print(DBUtil.retrieve_userinfo_by_id(4))
+
+# update user profile
+# update_info = {'name' : 'sb', 'sex' : 'f'}
+# update_id = 8
+# ok, err = DBUtil.update_userinfo(update_id, update_info)
+# if ok:
+#     print("Update user '%d' successfully!" % update_id)
+# else:
+#     print("Update user '%d' failed!" % update_id, err)

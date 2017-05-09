@@ -1,8 +1,3 @@
-'''
-Created on 2017年4月14日
-@author: KarlMical
-'''
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import insert
@@ -19,8 +14,8 @@ url_database = 'yue'
 url_username = 'root'
 url_pwd = 'hos950928'
 db_url = (
-    'mysql://' +
-    url_username + ':' + url_pwd + '@' +
+    'mysql://' + 
+    url_username + ':' + url_pwd + '@' + 
     url_host + ':' + url_port +'/' +
     url_database + '?charset=utf8'
     )
@@ -34,9 +29,9 @@ k_user_act = "user:%s:activities"   #actviites which the user joined
 k_user_group = "user:%s:groups"     #groups which the user attention
 
 #redis instance
-rins = redis.Redis(host='localhost', port=6379, password='',db=2)
+rins = redis.Redis(host='localhost', port=6379, password='redis',db=1)
 
-class DBUtil:
+class DBUtil: 
     @staticmethod
     def exec_query(handle_func, **args):
         ss = DBSession()
@@ -56,8 +51,8 @@ class DBUtil:
     @staticmethod
     def __decode_list_with_utf8(blist):
         '''
-        decode a binary list with utf8
-        :param blist:
+        decode a binary list with utf8 
+        :param blist: 
         :return: a list of strings
         '''
         ul = []
@@ -73,7 +68,7 @@ class DBUtil:
         except Exception as e:
             print(e)
             return False, e
-
+        
         return (rs == 1), None
 
 
@@ -121,6 +116,34 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_retrieve_userid_by_name(ss, args):
+        try:
+            rs = ss.query(TUser.id).filter(TUser.name == args['name']).limit(1).first()
+        except Exception as e:
+            print(e)
+            return -1
+
+        if rs is None:
+            # name not found
+            return 0
+        return rs[0]
+
+
+    @staticmethod
+    def __util_retrieve_userid_by_email(ss, args):
+        try:
+            rs = ss.query(TUser.id).filter(TUser.mail == args['mail']).limit(1).first()
+        except Exception as e:
+            print(e)
+            return -1
+
+        if rs is None:
+            # mail not found
+            return 0
+        return rs[0]
+
+
+    @staticmethod
     def __util_retrieve_user_friends(ss, args):
         try:
             rs = ss.query(TUser.friends).filter(TUser.id == args['user_id']).first()
@@ -129,6 +152,35 @@ class DBUtil:
             return None, e
 
         return rs[0], None
+
+
+    @staticmethod
+    def __util_retrieve_userinfo_by_id(ss, args):
+        try:
+            rs = ss.query(TUser.name, TUser.mail, TUser.active_value, TUser.avatar, TUser.birthdate, TUser.college,
+                          TUser.is_activated, TUser.credit, TUser.phone, TUser.profession, TUser.sex, TUser.stu_id).\
+                    filter(TUser.id == args['id']).limit(1).first()
+            ss.commit()
+        except Exception as e:
+            print(e)
+            return None
+
+        if rs is None:
+            return None
+        d = {}
+        d['name'] = rs[0]
+        d['mail'] = rs[1]
+        d['act_v'] = rs[2]
+        d['ava'] = rs[3]
+        d['birthdate'] = rs[4]
+        d['college'] = rs[5]
+        d['is_act'] = rs[6]
+        d['credict'] = rs[7]
+        d['phone'] = rs[8]
+        d['profession'] = rs[9]
+        d['sex'] = rs[10]
+        d['stu_id'] = rs[11]
+        return  d
 
 
     @staticmethod
@@ -181,7 +233,7 @@ class DBUtil:
     def __util_insert_new_user(conn, args):
         tb = TUser.__table__
         pcolumns = [tb.c.id, tb.c.name, tb.c.password, tb.c.mail, tb.c.phone,
-                    tb.c.stu_id, tb.c.college, tb.c.profession, tb.c.sex,
+                    tb.c.stu_id, tb.c.college, tb.c.profession, tb.c.sex, 
                     tb.c.birthdate, tb.c.avatar, tb.c.is_activated]
         vals = [ literal(None), literal(args['name']), literal(args['password']), literal(args['mail']),
                   literal(args['phone']), literal(args['stu_id']), literal(args['college']),
@@ -298,46 +350,92 @@ class DBUtil:
             ins = 'n'
         mail = args['mail']
         try:
-            ss.query(TUser).filter(TUser.mail == mail).update({TUser.is_activated : ins}, synchronize_session=False)
+            rs = ss.query(TUser).filter(TUser.mail == mail).update({TUser.is_activated : ins}, synchronize_session=False)
             ss.commit()
         except Exception as e:
             print(e)
             ss.rollback()
             return False, e
 
-        return True, None
+        if rs is 1:
+            return True, None
+        return False, None
+
+
+    @staticmethod
+    def __util_update_userinfo(ss, args):
+        info = args['info']
+        update_info = {}
+        if info.get('name'):
+            update_info[TUser.name] = info['name']
+        if info.get('mail'):
+            update_info[TUser.mail] = info['mail']
+        if info.get('phone'):
+            update_info[TUser.phone] = info['phone']
+        if info.get('stu_id'):
+            update_info[TUser.stu_id] = info['stu_id']
+        if info.get('college'):
+            update_info[TUser.college] = info['college']
+        if info.get('profession'):
+            update_info[TUser.college] = info['profession']
+        if info.get('sex'):
+            update_info[TUser.sex] = info['sex']
+        if info.get('birthdate'):
+            update_info[TUser.birthdate] = info['birthdate']
+        if info.get('credict'):
+            update_info[TUser.credit] = info['credict']
+        if info.get('act_v'):
+            update_info[TUser.active_value] = info['act_v']
+        if info.get('ava'):
+            update_info[TUser.avatar] = info['ava']
+        if info.get('is_act'):
+            update_info[TUser.is_activated] = info['is_act']
+
+        # print(update_info)
+        try:
+            rs = ss.query(TUser).filter(TUser.id == args['id']).update(update_info, synchronize_session='evaluate')
+            # print(rs)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False, e
+
+        if rs is 1:
+            return True, None
+        return False, None
 
 
     @staticmethod
     def flush_redis():
         '''
         remove all data of redis database, only for test
-        :return:
+        :return: 
         '''
         rins.flushdb()
 
 
     #param 'name': the name of user
     #return a tuple <isExisted, error>
-    #'isExisted' is a boolean indicates whether the user name is already existed;
+    #'isExisted' is a boolean indicates whether the user name is already existed; 
     #'error' is the exception when executing the query in the database, None means no exception
     @staticmethod
     def check_user_name_duplicated(name):
         return DBUtil.exec_query(DBUtil.__util_check_user_name_duplicated, username=name)
-
-
+    
+    
     #param 'phone': the phone number of user
     #return a tuple <isExisted, error>
-    #'isExisted' is a boolean indicates whether the user's phone number is already existed;
+    #'isExisted' is a boolean indicates whether the user's phone number is already existed; 
     #'error' is the exception when executing the query in the database, None means no exception
     @staticmethod
     def check_user_phone_duplicated(phone):
         return DBUtil.exec_query(DBUtil.__util_check_user_phone_duplicated, phonenumber=phone)
-
-
+    
+    
     #param 'mail': the mail address of user
     #return a tuple <isExisted, error>
-    #'isExisted' is a boolean indicates whether the user's mail address is already existed;
+    #'isExisted' is a boolean indicates whether the user's mail address is already existed; 
     #'error' is the exception when executing the query in the database, None means no exception
     @staticmethod
     def check_user_mail_duplicated(mail):
@@ -366,6 +464,23 @@ class DBUtil:
         '''
         return DBUtil.exec_query(DBUtil.__util_check_mail_activate, mail=mail)
 
+
+    @staticmethod
+    def retrieve_userinfo_by_id(id):
+        '''
+        :param id: user id
+        :return: a dict 
+            {
+                'name': name, 'mail' : mail, 'phone': phone, 'stu_id': student id, 
+                'college' : college, 'profession' : profession, 'sex' : sex, 'birthdate': birthdate, 
+                'credict" : credict, 'act_v' : activive value, 'ava' : avatar, 'is_act' : is activated 
+            } if found,
+            None if not found,
+            None if error occurs
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_userinfo_by_id, id=id)
+
+
     #param 'user_id': the id of query user
     #return a tuple <friendslist, error>
     #'friendslist': if successfully retrieved, friendslist is a str; else None
@@ -376,9 +491,29 @@ class DBUtil:
 
 
     @staticmethod
+    def retrieve_userid_by_name(name):
+        '''
+        get user's id by his name
+        :param name: user's nick name
+        :return: user's id, -1 if error occurs, 0 if not exists
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_userid_by_name, name=name)
+
+
+    @staticmethod
+    def retrieve_userid_by_mail(mail):
+        '''
+        get user's id by his mail
+        :param mail: user's mail
+        :return: user's id, -1 if error occurs, 0 if not exists
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_userid_by_email, mail=mail)
+
+
+    @staticmethod
     def retrieve_user_activities(user_id):
         '''
-        get a list of activities which the user joined
+        get a list of activities which the user joined 
         :param user_id: id of the user
         :return:  a list of activities
         '''
@@ -450,10 +585,10 @@ class DBUtil:
     #'error' is the exception when executing the query in the database, None means no exception
     @staticmethod
     def insert_new_user(args):
-        return DBUtil.exec_query_with_conn(DBUtil.__util_insert_new_user,
+        return DBUtil.exec_query_with_conn(DBUtil.__util_insert_new_user, 
                           name=args['name'], password=args['password'], mail=args['mail'],
                           phone=args['phone'], stu_id=args['stu_id'], college=args['college'],
-                          profession=args['profession'], sex=args['sex'],
+                          profession=args['profession'], sex=args['sex'], 
                           birthdate=args['birthdate'], avatar=args.get('avatar'), is_activated=args.get('is_activated'))
 
 
@@ -503,9 +638,9 @@ class DBUtil:
     @staticmethod
     def join_activity(user_id, activity_id_list):
         '''
-        :param user_id:
-        :param activity_id_list:
-        :return:
+        :param user_id: 
+        :param activity_id_list: 
+        :return: 
         '''
         k = k_user_act % user_id
         for id in activity_id_list:
@@ -525,7 +660,7 @@ class DBUtil:
     @staticmethod
     def update_user_friends(user_id, new_friends):
         '''
-        :param user_id:
+        :param user_id: 
         :param new_friends: a str list of user id
         :return: a tuple <ok, error>
             'ok': a boolean value indicates whether th update is successful.
@@ -544,6 +679,21 @@ class DBUtil:
             'error': the exception when executing the query in the database, None means no exception
         '''
         return DBUtil.exec_query(DBUtil.__util_update_user_mail_state, mail=mail, state=state)
+
+
+    @staticmethod
+    def update_userinfo(id, new_info):
+        '''
+        update user profile by the user id
+        :param id: user id
+        :param new_info: a dict of new info with keys like:
+            [ name, mail, phone, stu_id, college, profession, sex, birthdate, credict, act_v, ava, is_act ]
+            NOTE: at least one key is necessary
+        :return: a tuple <ok, err>
+            'ok': if ok is True, update succeeded, else failed
+            'err': if err is not None, error occurred while updating
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_userinfo, id=id, info=new_info)
 
 
     @staticmethod

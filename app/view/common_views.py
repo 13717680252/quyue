@@ -74,7 +74,3 @@ def testdb():
     print(exp)
     return('testing page')
 
-
-
-
-

@@ -75,6 +75,7 @@ def admitAct():
 def join():
     a = request.get_data()
     dict = json.loads(a)
+    list=[]
     list = [dict['activity_id']]
     user_id=dict['user_id']
     exp='none'
