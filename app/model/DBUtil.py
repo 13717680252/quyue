@@ -204,9 +204,9 @@ class DBUtil:
 
 
     @staticmethod
-    def __util_retrieve_activity(ss, args):
+    def __util_retrieve_activity(ss, id):
         try:
-            item = ss.query(TActivity).filter(TActivity.id == args['id']).first()
+            item = ss.query(TActivity).filter(TActivity.id == id).first()
             ss.expunge(item)
             ss.commit()
         except Exception as e:
@@ -625,7 +625,7 @@ class DBUtil:
         activities = []
         ss = DBSession()
         for id in act_ids:
-            act = DBUtil.__util_retrieve_activity(ss, {'id': id})
+            act = DBUtil.__util_retrieve_activity(ss, id)
             if act is not None:
                 activities.append(act)
         ss.close()
