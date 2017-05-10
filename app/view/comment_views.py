@@ -6,7 +6,7 @@ from flask import redirect
 from flask import jsonify
 from app.utils import send_message
 from app.model.DBUtil import *
-
+from app.utils.comment_servive import *
 vcomment = Blueprint('vcommon', __name__)
 
 
@@ -19,9 +19,11 @@ def commit_comment():
         if commentid is not 0:
             print("comment is created, id is '%d'" % commentid)
             dict2 = {'status': '1', 'commentid': commentid, 'errcode': 'null'};
+            activity_comment(dict)
         else:
             dict2 = {'status': '0', 'commentid': -1, 'errcode':exp};
         return json.dumps(dict2)
+
     else:
         return '400'
 
@@ -34,7 +36,8 @@ def commit_comment_person():
         commentid, exp = DBUtil.insert_new_comment_person(dict)
         if commentid is not 0:
             print("comment is created, id is id'%d'" % commentid)
-            dict2 = {'status': '1', 'commentid': commentid, 'errcode': 'null'};
+            dict2 = {'status': '1', 'commentid': commentid, 'errcode': 'null'}
+            user_comment(dict)
         else:
             dict2 = {'status': '0', 'comment': -1, 'errcode': exp};
         return json.dumps(dict2)

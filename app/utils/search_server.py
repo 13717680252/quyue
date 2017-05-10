@@ -23,7 +23,13 @@ def searchactivity(groupid,lables,keyword):
     return result
 
 def searchfriend(keyword):
-    pass
+    list=DBUtil.retrieve_all_userid
+    result=[]
+    for user in list:
+        dict = DBUtil.retrieve_userinfo_by_id(user)
+        if(keyword in dict['phone']or keyword in dict['mail'] or keyword in['name']):
+            result.append(user)
+    return(result)
 
 
 

@@ -1,6 +1,6 @@
 from flask import Blueprint
 import json
-import datetime
+from datetime import datetime
 from flask import Flask
 from flask import request
 from flask import redirect
@@ -44,16 +44,32 @@ def getUserActList(user_id):
     try:
      list=DBUtil.retrieve_user_activities(user_id)
      for act in list:
-         list2.append[act.id]
+         if act.is_canceled==0:
+          list2.append[act.id]
     except:
         exp='failed'
     dict = {'status': '1', 'activity': list2,'exp':exp};
     return json.dumps(dict)
     pass
 
+
 @vactivity.route('/get_past_activity_list/<user_id>')
 def getPastActList(user_id):
+    list = []
+    exp = 'none'
+    list2 = []
+    try:
+        now = datetime.now()
+        list = DBUtil.retrieve_user_activities(user_id)
+        for act in list:
+            if act.is_canceled == 0 and act.end_date:
+                list2.append[act.id]
+    except:
+        exp = 'failed'
+    dict = {'status': '1', 'activity': list2, 'exp': exp};
+    return json.dumps(dict)
     pass
+
 
 @vactivity.route('/admit_activity/',methods=['POST'] )
 def admitAct():
@@ -61,9 +77,13 @@ def admitAct():
         c_request = request.get_data()
         dict = json.loads(c_request)
         actid, exp = DBUtil.insert_new_activity(dict)
+
         if actid is not 0:
             print("user is created, id is '%d'" % actid)
             dict2 = {'status': '1', 'actid':actid, 'errcode': 'null'};
+            list=[]
+            list.append[actid]
+            DBUtil.join_activity(dict['publisher'], list)
         else:
             dict2 = {'status': '0', 'actid': -1, 'errcode': exp};
         return json.dumps(dict2)
@@ -117,5 +137,30 @@ def searchact():
 
 @vactivity.route('/get_member_list/<activity_id>')
 def getMemberList(activity_id):
-    pass
+    list=DBUtil.retrieve_joined_people_of_activity(activity_id)
+    if list!=None:
+      dict2 = {'status': 1, 'activity_id': list, 'exp':"none"};
+    else :
+        dict2={'status': 0,'exp':"none member"}
+    return json.dumps(dict2)
+
+@vactivity.route("/insertactivity")
+def insertactivity():
+    s = datetime.now()
+    e = datetime.now()
+    activity = {"name": '新活动3', "publisher": 22, "group_id": 2, "description": 'a description',
+                "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
+                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
+    states,exp=DBUtil.insert_new_activity(activity)
+
+    return str(states)
+
+@vactivity.route("/testjoin")
+def testjoin():
+    d_list = DBUtil.remove_user_activities(22, ['2'])
+    list=DBUtil.retrieve_user_activities(22)
+    ids=[]
+    for i in list:
+        ids.append(i.id)
+    return str(ids)
 
