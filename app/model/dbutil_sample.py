@@ -106,7 +106,8 @@ def check_mail_activate(mail):
 
 
 def join_activity(user_id, activity_id_list):
-    DBUtil.join_activity(user_id, activity_id_list)
+    rs = DBUtil.join_activity(user_id, activity_id_list)
+    print('List of activities failed to join: ', rs)
 
 
 def get_user_activities(user_id):
@@ -186,7 +187,7 @@ add_friends(4, ['1', '8', '9'])
 # check_mail_activate("153@qq.com")
 
 # # join an actitities
-# join_activity('4', ['1'])
+# join_activity('4', ['2', '1'])
 
 # #get activities which user with id '4' joined
 # get_user_activities('4')
@@ -228,3 +229,15 @@ add_friends(4, ['1', '8', '9'])
 # else:
 #     print("Update user '%d' failed!" % update_id, err)
 
+# retrieve all user id
+# ids = DBUtil.retrieve_all_userid()
+# print(ids)
+
+# retrieve joined people's id
+# ps = DBUtil.retrieve_joined_people_of_activity(1)
+# print(ps)
+
+# quit activities
+# DBUtil.remove_user_activities('4', ['1', '2'])
+
+#
