@@ -10,6 +10,8 @@ from app.view.pic_views import *
 from app.view.user_views import *
 
 app = Flask(__name__)
+UPLOAD_FOLDER = '/path/to/the/uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config.from_object("config")
 app.register_blueprint(vfriend)
 app.register_blueprint(vactivity)

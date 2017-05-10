@@ -62,7 +62,7 @@ def getPastActList(user_id):
         now = datetime.now()
         list = DBUtil.retrieve_user_activities(user_id)
         for act in list:
-            if act.is_canceled == 0 and act.end_date:
+            if act.is_canceled == 0 and now>act.end_date:
                 list2.append[act.id]
     except:
         exp = 'failed'
@@ -105,6 +105,7 @@ def join():
      exp='failed'
     dict2 = {'status': 1, 'activity_id': dict['activity_id'], 'exp':exp};
     return json.dumps(dict2)
+
 
 @vactivity.route('/quit_activity',methods=['POST'])
 def quit():

@@ -8,6 +8,7 @@ from flask import jsonify
 from app.model.DBUtil import *
 from app.model.models import TActivity
 from app.model.DBUtil import *
+from app.utils.search_server import*
 vuser=Blueprint('vuser',__name__)
 @vuser.route('/get_user_info/<user_id>',methods=['POST'])
 def getUserInof(user_id):
@@ -31,5 +32,11 @@ def changeInfo(user_id):
     state, exp=DBUtil.update_userinfo(user_id,dict)
     dict2 = {'status': '1', 'state': state, 'errcode': exp};
     return json.dumps(dict2)
+
+@vuser.route('/search_user/<key>',methods=['POST'])
+def searchuser(key):
+    list=searchfriend(key)
+    dict2 = {'status': '1', 'result': list, 'errcode': "none"};
+
 
 
