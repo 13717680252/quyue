@@ -190,6 +190,20 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_retrieve_all_userid(ss, args):
+        try:
+            rs = ss.query(TUser.id).all()
+        except Exception as e:
+            print(e)
+            return None
+        ret = []
+        for item in rs:
+            ret.append(item[0])
+        return  ret
+
+
+
+    @staticmethod
     def __util_retrieve_activity(ss, args):
         try:
             item = ss.query(TActivity).filter(TActivity.id == args['id']).first()
@@ -200,6 +214,19 @@ class DBUtil:
             return None
 
         return item
+
+
+    @staticmethod
+    def __util_retrieve_joined_people_of_activity(ss, args):
+        try:
+            rs = ss.query(TActivity.join_ids).filter(TActivity.id == args['id']).limit(1).first()
+        except Exception as e:
+            print(e)
+            return None
+
+        if rs is None or len(rs) is 0:
+            return None
+        return rs[0]
 
 
     @staticmethod
@@ -349,6 +376,37 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_join_activity(ss, user_id, act_id):
+        '''
+        :param ss: db session
+        :param user_id: the user id
+        :param act_id:  the id of activity to be joined
+        :return: True if the joined user if updated in the activity joined list, False if failed
+        '''
+        jl = DBUtil.retrieve_joined_people_of_activity(act_id)
+        if jl is None:
+            return False
+        #check if the user is already joined
+        for id in jl:
+            if id is user_id:
+                return True
+        #add to joined list
+        jl.append(user_id)
+        jl_str = ','.join(jl)
+        try:
+            rs = ss.query(TActivity).filter(TActivity.id == act_id).update({TActivity.join_ids : jl_str}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+
+        if rs is 1:
+            return True
+        return False
+
+
+    @staticmethod
     def __util_update_user_mail_state(ss, args):
         if args['state']:
             ins = 'y'
@@ -410,6 +468,45 @@ class DBUtil:
         if rs is 1:
             return True, None
         return False, None
+
+
+    @staticmethod
+    def __util_delete_joined_user_of_activity(ss, act_id, user_id):
+        '''
+        remove user from the activity
+        :param ss: db session
+        :param act_id: activity id
+        :param user_id: user id
+        :return: True if success, False failed
+        '''
+        jl = DBUtil.retrieve_joined_people_of_activity(act_id)
+        # print(jl)
+        if jl is None:
+            return False
+        # check if the user if in the joined list of the activity
+        found = False
+        for id in jl:
+            if id is user_id:
+                # remove the user if he is in the joined list
+                found = True
+                jl.remove(id)
+                break
+        if found:
+            try:
+                rs = ss.query(TActivity).filter(TActivity.id == act_id).\
+                    update({TActivity.join_ids : ','.join(jl)}, synchronize_session=False)
+                ss.commit()
+            except Exception as e:
+                print(e)
+                ss.rollback()
+                return False
+            if rs is 1:
+                return True
+            else:
+                return  False
+        #
+        print("The user '%s' is not in the joined list of the activity '%s'" % (user_id, act_id))
+        return True
 
 
     @staticmethod
@@ -554,6 +651,14 @@ class DBUtil:
 
 
     @staticmethod
+    def retrieve_all_userid():
+        '''
+        :return: a list of user id or None if error occured
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_all_userid)
+
+
+    @staticmethod
     def retrieve_activity_by_id(id):
         '''
         retrieve a activity by its id
@@ -561,6 +666,21 @@ class DBUtil:
         :return: an activity if the id is valid or None otherwise
         '''
         return  DBUtil.exec_query(DBUtil.__util_retrieve_activity, id=id)
+
+
+    @staticmethod
+    def retrieve_joined_people_of_activity(id):
+        '''
+        retrieve all joinded people's id by the activity id
+        :param id: the activity id
+        :return: a list of people id or None if error occured
+        '''
+        jl =DBUtil.exec_query(DBUtil.__util_retrieve_joined_people_of_activity, id=id)
+        if jl is None:
+            return None
+        if jl is "":
+            return []
+        return jl.split(',')
 
 
     @staticmethod
@@ -646,11 +766,19 @@ class DBUtil:
         '''
         :param user_id: 
         :param activity_id_list: 
-        :return: 
+        :return: a list of id of activities that failed to joined
         '''
+        ss = DBSession()
+        failed_list = []
         k = k_user_act % user_id
         for id in activity_id_list:
-            rins.sadd(k, id)
+            if DBUtil.__util_join_activity(ss, user_id, id):
+                #add to redis if successfully updated in mysql
+                rins.sadd(k, id)
+            else:
+                failed_list.append(id)
+        ss.close()
+        return failed_list
 
 
     @staticmethod
@@ -705,10 +833,22 @@ class DBUtil:
     @staticmethod
     def remove_user_activities(user_id, activity_ids):
         '''
-        remove a list of activies which the user joined
+        remove a list of activties which the user joined
         :param user_id: id of the user
         :param activity_ids: the id list of activities
-        :return:  the number of activities that were removed
+        :return:  the id list of activities failed to quit
         '''
-        return  rins.srem(k_user_act % user_id, *activity_ids)
+        ss = DBSession()
+        k = k_user_act % user_id
+        failed_list = []
+        for act_id in activity_ids:
+            if DBUtil.__util_delete_joined_user_of_activity(ss, act_id, user_id):
+                # if remove the user out of the joined list successfully
+                # push updates to redis
+                rins.srem(k, act_id)
+            else:
+                failed_list.append(act_id)
+        ss.close()
+        return failed_list
+
 
