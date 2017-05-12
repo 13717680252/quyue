@@ -141,17 +141,17 @@ new_group1 = {"name": 'xx读书会', "type" : 1, "description": "用户自定义
 new_group2 = {"name": '篮球', "description": "系统自定义组", "create_date": "2017-04-01"}
 insert_new_group(new_group1)
 insert_new_group(new_group2)
-
+'''
 
 #insert an activity
 #field 'cur_num', 'join_ids' and 'tags' are optional
-s = datetime.now() #a timestamp denotes the start time of the act
-e = datetime.now()  #a timesatmp denotes end time of the act
-activity = {"name": '新活动', "publisher": 8, "group_id": 1, "description": 'a description',
-            "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
-            "join_ids":'1,5,8', "tags":'聚餐,交友', "is_canceled": 0}
-insert_new_activity(activity)
-'''
+# s = datetime.now() #a timestamp denotes the start time of the act
+# e = datetime.now()  #a timesatmp denotes end time of the act
+# activity = {"name": '信心互动', "publisher": 8, "group_id": 2, "description": 'a description',
+#             "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
+#             "join_ids":'1,5,8', "tags":'聚餐,交友', "is_canceled": 0}
+# insert_new_activity(activity)
+
 
 #day 04-20
 #insert a new commnet of the activity
@@ -196,7 +196,7 @@ add_friends(4, ['1', '8', '9'])
 # exit_activites('4', ['1'])
 
 # make attention to groups
-# print(DBUtil.add_user_group('4', ['7']))
+# print(DBUtil.add_user_group('4', ['1', '2']))
 
 # retrieve activities 5 days before by group which those belong to
 # print(DBUtil.retrieve_activitiy_by_group('1', datetime.now() - timedelta(days=5), 5))
