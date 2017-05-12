@@ -312,6 +312,8 @@ class DBUtil:
                                  tags=args['tags'], is_canceled=args['is_canceled'])
         try:
             ss.add(new_activity)
+            ss.query(TGroup).filter(TGroup.id == args['group_id']).\
+                update({TGroup.activetity_count : TGroup.activetity_count + 1}, synchronize_session=False)
             ss.commit()
         except Exception as e:
             print(e)
@@ -352,6 +354,29 @@ class DBUtil:
             return 0, e
 
         return commp.id, None
+
+    @staticmethod
+    def __util_increase_group_attention(ss, group_id, inc=1):
+        '''
+        increase the group attention by number 'inc'
+        :param ss: db session
+        :param group_id: group id
+        :param inc: number of attention to increase
+        :return: True if success, False otherwise
+        '''
+        try:
+            rs = ss.query(TGroup).filter(TGroup.id == group_id).\
+                update({TGroup.attention_count : TGroup.attention_count + inc}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+
+        # print("rs",rs, "inc", inc)
+        if rs is None or rs is not 1:
+            return False
+        return  True
 
 
     @staticmethod
@@ -395,6 +420,7 @@ class DBUtil:
         jl_str = ','.join(jl)
         try:
             rs = ss.query(TActivity).filter(TActivity.id == act_id).update({TActivity.join_ids : jl_str}, synchronize_session=False)
+            #
             ss.commit()
         except Exception as e:
             print(e)
@@ -784,11 +810,18 @@ class DBUtil:
     @staticmethod
     def add_user_group(user_id, groups):
         '''
-        add an id list of groups to user
+        add an id list of groups to user that the user attentioned
         :param groups: an id list
         :return:  the number of groups that were added, not including the ones that were present
         '''
-        return rins.sadd(k_user_group % user_id, *groups)
+        num = 0
+        k = k_user_group % user_id
+        ss = DBSession()
+        for gid in groups:
+            if rins.sadd(k, gid) is 1 and DBUtil.__util_increase_group_attention(ss, gid):
+                num = num + 1
+        ss.close()
+        return num
 
 
     @staticmethod
