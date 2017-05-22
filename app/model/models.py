@@ -67,6 +67,13 @@ class TGroup(Base):
     activetity_count = Column(Integer, nullable=False, server_default=text("'0'"))
 
 
+class TPicUrl(Base):
+    __tablename__ = 't_pic_url'
+
+    pic_id = Column(BigInteger, primary_key=True)
+    url = Column(String(1000), nullable=False)
+
+
 class TUser(Base):
     __tablename__ = 't_user'
 

@@ -7,6 +7,7 @@ from flask import request, render_template
 from flask import redirect
 from flask import jsonify
 vfriend=Blueprint('vfriend',__name__)
+r = redis.Redis(host='localhost', port=6379,db=4)
 
 @vfriend.route('/get_friend_list/<user_id>',methods=['POST'])
 def getFriendList(user_id):
@@ -21,13 +22,24 @@ def getFriendList(user_id):
     else:
         return '400'
 
-@vfriend.route('/send_text')
+@vfriend.route('/send_text',methods=['POST'])
 def sendText():
     return('succeed2')
 
 @vfriend.route('/send_friend_invitation')
 def invitation():
-    pass
+    dict2 = {'status': '1', 'errcode': "none"};
+    if request.method == 'POST':
+        a = request.get_data()
+        dict = json.loads(a)
+        userid = dict['userid']
+        friendid = dict['friendid']
+        text = dict['text']
+        r.lpush("invitation:" + friendid, text)
+        r.lpush("invitation:"+friendid, userid)
+
+    return json.dumps(dict2)
+
 
 @vfriend.route('/reply_invitation')
 def reply_invitation():
@@ -46,3 +58,15 @@ def reply_invitation():
         return json.dumps(dict2)
     else:
         return '400'
+
+@vfriend.route('/testfriend')
+def test():
+        userid = '1'
+        friendid = '22'
+        text = "caonima"
+        r.lpush("invitation:"+friendid, text)
+        r.lpush("invitation:"+friendid, friendid)
+        r.lpush("changing:22", "1995-09-09")
+        r.lpush("changing:22" ,"description")
+        r.lpush("changing:22", "1")
+        return ("successful")

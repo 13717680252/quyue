@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import insert
-from app.model.models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson
+from app.model.models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson,TPicUrl
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.expression import exists, select
 from sqlalchemy.sql.elements import or_, literal
@@ -184,6 +184,31 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_retrieve_avatar_url(ss, args):
+        try:
+            rs = ss.query(TPicUrl.pic_id).filter(TPicUrl.pic_id == args["id"]).first()
+        except Exception as e:
+            print(e)
+            return  None
+        if rs is None:
+            return None
+        return rs[0]
+
+
+    @staticmethod
+    def __util_retrieve_user_avatar(ss, args):
+        try:
+            rs = ss.query(TUser.avatar).filter(TUser.id == args["id"]).first()
+        except Exception as e:
+            print(e)
+            return None
+        # print(rs)
+        if rs is None:
+            return None
+        return rs[0]
+
+
+    @staticmethod
     def __util_retrieve_all_userid(ss, args):
         try:
             rs = ss.query(TUser.id).all()
@@ -306,6 +331,8 @@ class DBUtil:
                                  tags=args['tags'], is_canceled=args['is_canceled'])
         try:
             ss.add(new_activity)
+            ss.query(TGroup).filter(TGroup.id == args['group_id']).\
+                update({TGroup.activetity_count : TGroup.activetity_count + 1}, synchronize_session=False)
             ss.commit()
         except Exception as e:
             print(e)
@@ -349,6 +376,44 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_insert_pic_url(ss, args):
+        tpic = TPicUrl(url=args["url"])
+        try:
+            ss.add(tpic)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return None
+
+        return tpic.pic_id
+
+
+    @staticmethod
+    def __util_increase_group_attention(ss, group_id, inc=1):
+        '''
+        increase the group attention by number 'inc'
+        :param ss: db session
+        :param group_id: group id
+        :param inc: number of attention to increase
+        :return: True if success, False otherwise
+        '''
+        try:
+            rs = ss.query(TGroup).filter(TGroup.id == group_id).\
+                update({TGroup.attention_count : TGroup.attention_count + inc}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+
+        # print("rs",rs, "inc", inc)
+        if rs is None or rs is not 1:
+            return False
+        return  True
+
+
+    @staticmethod
     def __util_add_user_frends(ss, args):
         new_friends = args['new_friends']
         old_friends, exp = DBUtil.__util_retrieve_user_friends(ss, {"user_id": args['user_id']})
@@ -389,6 +454,7 @@ class DBUtil:
         jl_str = ','.join(jl)
         try:
             rs = ss.query(TActivity).filter(TActivity.id == act_id).update({TActivity.join_ids : jl_str}, synchronize_session=False)
+            #
             ss.commit()
         except Exception as e:
             print(e)
@@ -462,6 +528,22 @@ class DBUtil:
         if rs is 1:
             return True, None
         return False, None
+
+
+    @staticmethod
+    def __util_update_user_avatar(ss, args):
+        try:
+            rs = ss.query(TUser).filter(TUser.id == args["user_id"]).\
+                update({TUser.avatar : args["avatar_id"]}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+
+        if rs is 1:
+            return True
+        return False
 
 
     @staticmethod
@@ -645,6 +727,26 @@ class DBUtil:
 
 
     @staticmethod
+    def retrieve_avatar_url(avatar_id):
+        '''
+        get user avatar url by the avatar id
+        :param user_id:
+        :return: the avatar url of the user
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_avatar_url, id=avatar_id)
+
+
+    @staticmethod
+    def retrive_user_avatar(user_id):
+        '''
+        retrieve user's avatar id
+        :param user_id:
+        :return: id of the user avatar if success, None if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_user_avatar, id=user_id)
+
+
+    @staticmethod
     def retrieve_all_userid():
         '''
         :return: a list of user id or None if error occured
@@ -756,6 +858,15 @@ class DBUtil:
 
 
     @staticmethod
+    def insert_pic_url(pic_url):
+        '''
+        :param pic_url:
+        :return: id of the pic_url if success, None if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_insert_pic_url, url=pic_url)
+
+
+    @staticmethod
     def join_activity(user_id, activity_id_list):
         '''
         :param user_id:
@@ -778,11 +889,18 @@ class DBUtil:
     @staticmethod
     def add_user_group(user_id, groups):
         '''
-        add an id list of groups to user
+        add an id list of groups to user that the user attentioned
         :param groups: an id list
         :return:  the number of groups that were added, not including the ones that were present
         '''
-        return rins.sadd(k_user_group % user_id, *groups)
+        num = 0
+        k = k_user_group % user_id
+        ss = DBSession()
+        for gid in groups:
+            if rins.sadd(k, gid) is 1 and DBUtil.__util_increase_group_attention(ss, gid):
+                num = num + 1
+        ss.close()
+        return num
 
 
     @staticmethod
@@ -822,6 +940,17 @@ class DBUtil:
             'err': if err is not None, error occurred while updating
         '''
         return DBUtil.exec_query(DBUtil.__util_update_userinfo, id=id, info=new_info)
+
+
+    @staticmethod
+    def update_user_avatar(user_id, avatar_id):
+        '''
+        update user's avatar
+        :param user_id: id of user
+        :param avatar_id: id of avatar
+        :return: True if update success , Flase if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_user_avatar, user_id=user_id, avatar_id=avatar_id)
 
 
     @staticmethod

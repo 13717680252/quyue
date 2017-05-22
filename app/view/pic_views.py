@@ -2,28 +2,42 @@ from flask import Blueprint
 import os
 from flask import Flask, request, redirect, url_for,send_from_directory
 from werkzeug.utils import secure_filename
-
+from app.model.DBUtil import *
+import json
 vpic=Blueprint('vpic',__name__)
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 @vpic.route('/get_pic/<pic_id>' )
 def getPic(pic_Id):
    pass
 
-@vpic.route('/upload_pic')
+@vpic.route('/upload_pic',methods=['POST','GET'])
 def uploadPic():
-    pass
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save('D:\\yue_server\\path\\' + filename)
+            pic_id = DBUtil.insert_pic_url('D:\\yue_server\\path\\' + filename)
+            dict = {'status': '1', 'pic_id': pic_id, 'errcode': "none"};
+        else:
+            dict = {'status': '0', 'pic_id': -1, 'errcode': "upload failed"};
+    return json.dumps(dict)
+
 
 @vpic.route('/get_pic_list/<activity_id>')
 def getPicList(activity_id):
     pass
 
+
 @vpic.route('/uploaded/<filename>')
 def uploaded(filename):
     return send_from_directory('D:\\yue_server\\path\\',filename)
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 
 @vpic.route('/uploadtest',methods=['POST','GET'])
 def upload_file():
@@ -43,4 +57,10 @@ def upload_file():
              <input type=submit value=Upload>
         </form>
         '''
-
+@vpic.route("get_pic/<pic_id>")
+def get_pic(pic_id):
+    url=DBUtil.retrieve_avatar_url(pic_id)
+    i = url.rindex("\\")
+    pre = str[:i]
+    fname = str[i + 1:]
+    return send_from_directory(pre, fname)

@@ -119,9 +119,9 @@ def quit():
     except:
         exp='failed'
     if len(d_list)>0:
-     dict2 = {'status': 1, 'activity_id':d_list[0] , 'exp':exp};
+     dict2 = {'status': 1, 'failed_id':d_list[0] , 'exp':exp};
     else:
-     dict2 = {'status': 1, 'activity_id': -1, 'exp': exp};
+     dict2 = {'status': 1, 'failed_id': -1, 'exp': exp};
     return json.dumps(dict2)
 
 @vactivity.route('/searchact',methods=['POST'])
