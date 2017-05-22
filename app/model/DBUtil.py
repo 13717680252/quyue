@@ -7,7 +7,7 @@ Created on 2017年4月14日
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import insert
-from models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson
+from models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson, TPicUrl
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.expression import exists, select
 from sqlalchemy.sql.elements import or_, literal
@@ -190,6 +190,31 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_retrieve_avatar_url(ss, args):
+        try:
+            rs = ss.query(TPicUrl.pic_id).filter(TPicUrl.pic_id == args["id"]).first()
+        except Exception as e:
+            print(e)
+            return  None
+        if rs is None:
+            return None
+        return rs[0]
+
+
+    @staticmethod
+    def __util_retrieve_user_avatar(ss, args):
+        try:
+            rs = ss.query(TUser.avatar).filter(TUser.id == args["id"]).first()
+        except Exception as e:
+            print(e)
+            return None
+        # print(rs)
+        if rs is None:
+            return None
+        return rs[0]
+
+
+    @staticmethod
     def __util_retrieve_all_userid(ss, args):
         try:
             rs = ss.query(TUser.id).all()
@@ -355,6 +380,21 @@ class DBUtil:
 
         return commp.id, None
 
+
+    @staticmethod
+    def __util_insert_pic_url(ss, args):
+        tpic = TPicUrl(url=args["url"])
+        try:
+            ss.add(tpic)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return None
+
+        return tpic.pic_id
+
+
     @staticmethod
     def __util_increase_group_attention(ss, group_id, inc=1):
         '''
@@ -494,6 +534,22 @@ class DBUtil:
         if rs is 1:
             return True, None
         return False, None
+
+
+    @staticmethod
+    def __util_update_user_avatar(ss, args):
+        try:
+            rs = ss.query(TUser).filter(TUser.id == args["user_id"]).\
+                update({TUser.avatar : args["avatar_id"]}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+
+        if rs is 1:
+            return True
+        return False
 
 
     @staticmethod
@@ -677,6 +733,26 @@ class DBUtil:
 
 
     @staticmethod
+    def retrieve_avatar_url(avatar_id):
+        '''
+        get user avatar url by the avatar id
+        :param user_id: 
+        :return: the avatar url of the user
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_avatar_url, id=avatar_id)
+
+
+    @staticmethod
+    def retrive_user_avatar(user_id):
+        '''
+        retrieve user's avatar id
+        :param user_id: 
+        :return: id of the user avatar if success, None if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_user_avatar, id=user_id)
+
+
+    @staticmethod
     def retrieve_all_userid():
         '''
         :return: a list of user id or None if error occured
@@ -788,6 +864,15 @@ class DBUtil:
 
 
     @staticmethod
+    def insert_pic_url(pic_url):
+        '''
+        :param pic_url: 
+        :return: id of the pic_url if success, None if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_insert_pic_url, url=pic_url)
+
+
+    @staticmethod
     def join_activity(user_id, activity_id_list):
         '''
         :param user_id: 
@@ -861,6 +946,17 @@ class DBUtil:
             'err': if err is not None, error occurred while updating
         '''
         return DBUtil.exec_query(DBUtil.__util_update_userinfo, id=id, info=new_info)
+
+
+    @staticmethod
+    def update_user_avatar(user_id, avatar_id):
+        '''
+        update user's avatar
+        :param user_id: id of user
+        :param avatar_id: id of avatar
+        :return: True if update success , Flase if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_user_avatar, user_id=user_id, avatar_id=avatar_id)
 
 
     @staticmethod
