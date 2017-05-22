@@ -124,6 +124,7 @@ def exit_activites(user_id, activities):
     else:
         print("Failed to remove activities of user %s. Activities: " % user_id, activities)
 
+#    sqlacodegen --noviews --noconstraints --noindexes --outfile F:\工程项目\PyProjects\quyue\app\model\models.py mysql://root:@localhost:3307/date
 
 '''
 check_user_name('fsx')
@@ -240,4 +241,20 @@ add_friends(4, ['1', '8', '9'])
 # quit activities
 # DBUtil.remove_user_activities('4', ['1', '2'])
 
-#
+#insert an avatar url
+# pic_id = DBUtil.insert_pic_url("abc.com")
+# print(pic_id)
+
+#query user's avatar id
+# url = DBUtil.retrieve_avatar_url(0)
+# print(url)
+
+
+#query user avatar
+# ava_id = DBUtil.retrive_user_avatar(8)
+# print(ava_id)
+
+#update user avatar
+# ok = DBUtil.update_user_avatar(8, 3)
+# print(ok)
+
