@@ -18,9 +18,10 @@ def register():
         if(isexcited or isexcited2 or isexcited3):
             dict2 = {'status': '0', 'userid': -1, 'errcode': 'duplicated'};
             return json.dumps(dict2)
+        dict["is_activated"] = 'n'
+        dict["avatar"]="-1"
         uid, exp = DBUtil.insert_new_user(dict)
         ret=send_message.mail(userid=dict['name'], receiver=dict['mail'])
-        dict["is_activated"]='n'
 
         if not ret:
             print("the email might not be right")
@@ -42,9 +43,10 @@ def login():
     dict = json.loads(a)
     ismatched, exp = DBUtil.check_user_mail_and_psw(dict['name'],dict['password'])
     if ismatched:
-        dict2={'status':1,'username':dict['name'],'errorcode':exp}
+        user_id=DBUtil.retrieve_userid_by_mail(dict['name'])
+        dict2={'status':1,'userid':user_id,'errorcode':exp}
     else:
-        dict2 = {'status': 0, 'username': dict['name'], 'errorcode': exp}
+        dict2 = {'status': 0, 'userid': -1, 'errorcode': exp}
     return json.dumps(dict2)
 
 @vcommon.route('/activate/<token>')
@@ -59,7 +61,7 @@ def activate(token):
 from app.utils import send_message
 @vcommon.route('/testmail')
 def testmail():
-    ret=send_message.mail(1001,'1271369334@qq.com')
+    ret=send_message.mail(1001,"13717680252@163.com")
     return ('true')
 
 

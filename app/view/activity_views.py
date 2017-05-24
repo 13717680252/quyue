@@ -14,13 +14,14 @@ vactivity=Blueprint('vactivity',__name__)
 def getActDetails(activity_id):
     act=DBUtil.retrieve_activity_by_id(activity_id)
     act_dict={}
+    act_dict['name']=act.name
     act_dict['id']=act.id
     act_dict['publisher']=act.publisher
     act_dict['group_id']=act.group_id
     act_dict['description']=act.description
-    act_dict['create_date']= datetime.datetime.strftime(act.create_date, '%Y-%m-%d %H:%M:%S')
-    act_dict['start_date']=datetime.datetime.strftime(act.start_date, '%Y-%m-%d %H:%M:%S')
-    act_dict['end_date']=datetime.datetime.strftime(act.end_date, '%Y-%m-%d %H:%M:%S')
+    act_dict['create_date']= datetime.strftime(act.create_date, '%Y-%m-%d %H:%M:%S')
+    act_dict['start_date']=datetime.strftime(act.start_date, '%Y-%m-%d %H:%M:%S')
+    act_dict['end_date']=datetime.strftime(act.end_date, '%Y-%m-%d %H:%M:%S')
     act_dict['min_num']=act.min_num
     act_dict['max_num']=act.max_num
     act_dict['cur_num']=act.cur_num
@@ -45,12 +46,11 @@ def getUserActList(user_id):
      list=DBUtil.retrieve_user_activities(user_id)
      for act in list:
          if act.is_canceled==0:
-          list2.append[act.id]
+          list2.append(act.id)
     except:
         exp='failed'
     dict = {'status': '1', 'activity': list2,'exp':exp};
     return json.dumps(dict)
-    pass
 
 
 @vactivity.route('/get_past_activity_list/<user_id>')
@@ -147,21 +147,30 @@ def getMemberList(activity_id):
 
 @vactivity.route("/insertactivity")
 def insertactivity():
-    s = datetime.now()
-    e = datetime.now()
-    activity = {"name": '新活动3', "publisher": 22, "group_id": 2, "description": 'a description',
-                "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 3,
+    s=datetime.strptime("2017-06-01 21:00:00", "%Y-%m-%d %H:%M:%S")
+    e = datetime.strptime("2017-05-31 21:00:00", "%Y-%m-%d %H:%M:%S")
+    activity = {"name": '新活动4', "publisher": 22, "group_id": 2, "description": 'a description',
+                "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
+                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
+    activity2 = {"name": '新活动5', "publisher": 22, "group_id": 2, "description": 'a description',
+                "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
+                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
+    activity3 = {"name": '新活动6', "publisher": 22, "group_id": 2, "description": 'a description',
+                "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
                 "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
     states,exp=DBUtil.insert_new_activity(activity)
+    states, exp = DBUtil.insert_new_activity(activity2)
+    states, exp = DBUtil.insert_new_activity(activity3)
 
     return str(states)
 
 @vactivity.route("/testjoin")
 def testjoin():
-    d_list = DBUtil.remove_user_activities(22, ['2'])
-    list=DBUtil.retrieve_user_activities(22)
-    ids=[]
-    for i in list:
-        ids.append(i.id)
-    return str(ids)
+   DBUtil.join_activity('22',['6','7','8'])
+   return "nice"
 
+@vactivity.route('/getact')
+def getact():
+    act = DBUtil.retrieve_activity_by_id(2)
+    print(act)
+    return ""

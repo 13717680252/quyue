@@ -49,6 +49,7 @@ def comingactivity(user_id):
         now.strftime('%Y-%m-%d %H:%M:%S')
     return("successful")
 
+
 @vservice.route('/notest')
 def notest():
     friend_id=r.lpop("invitation:22" )
@@ -56,4 +57,5 @@ def notest():
     if friend_id is None:
      return('none')
     return(friend_id)
+
 

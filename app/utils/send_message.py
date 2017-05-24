@@ -26,16 +26,19 @@ def mail(userid,receiver):
     ret = True
     tk = generate_confirmation_token(receiver)
     confirm_url = url_for('vcommon.activate', token=tk,_external=True)
+    html = render_template('test.html', confirm_url=confirm_url)
     try:
-        html = render_template('test.html', confirm_url=confirm_url)
-
-        msg = MIMEText(html, 'html', 'utf-8')
+        mail_msg = """
+       <p>Python 邮件发送测试...</p>
+       <p><a href="http://www.runoob.com">这是一个链接</a></p>
+       """
+        msg = MIMEText(mail_msg, 'html', 'utf-8')
         msg['From'] = formataddr(["去约团队", my_sender])  # 括号里的对应发件人邮箱昵称、发件人邮箱账号
         msg['To'] = formataddr(["尊敬的用户", receiver])  # 括号里的对应收件人邮箱昵称、收件人邮箱账号
         msg['Subject'] = "主题"  # 邮件的主题，也可以说是标题
         server = smtplib.SMTP("smtp.163.com", 25)  # 发件人邮箱中的SMTP服务器，端口是25
-        server.login(my_sender, "hosj8dasiwole")  # 括号中对应的是发件人邮箱账号、邮箱密码
-        server.sendmail(my_sender, [receiver], msg.as_string())  # 括号中对应的是发件人邮箱账号、收件人邮箱账号、发送邮件
+        server.login(my_sender, "hos950928")  # 括号中对应的是发件人邮箱账号、邮箱密码
+        server.sendmail("from@hos.com", [receiver], msg.as_string())  # 括号中对应的是发件人邮箱账号、收件人邮箱账号、发送邮件
         server.quit()  # 这句是关闭连接的意思
     except Exception:  # 如果try中的语句没有执行，则会执行下面的ret=False
         ret = False

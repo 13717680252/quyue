@@ -5,6 +5,7 @@ from flask import redirect
 from flask import jsonify
 from datetime import  datetime
 from datetime import  timedelta
+from app.model.models import TGroup,TActivity
 import json
 from app.model.DBUtil import *
 vgroup=Blueprint('vgroup',__name__)
@@ -43,7 +44,11 @@ def cancelFocused(user_id):
     pass
 
 
-@vgroup.route('/addgroup')
-def addgroup():
-    pass
+@vgroup.route('/getgroup')
+def getgroup():
+    list = DBUtil.retrieve_activitiy_by_group(2, datetime.now() - timedelta(days=200), 999)
+    for act in list:
+       print(act.id)
+    return ""
+
 

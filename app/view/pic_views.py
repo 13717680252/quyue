@@ -6,10 +6,6 @@ from app.model.DBUtil import *
 import json
 vpic=Blueprint('vpic',__name__)
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-@vpic.route('/get_pic/<pic_id>' )
-def getPic(pic_Id):
-   pass
-
 @vpic.route('/upload_pic',methods=['POST','GET'])
 def uploadPic():
     if request.method == 'POST':
@@ -57,10 +53,19 @@ def upload_file():
              <input type=submit value=Upload>
         </form>
         '''
-@vpic.route("get_pic/<pic_id>")
+@vpic.route("/get_pic/<pic_id>",methods=['POST','GET'])
 def get_pic(pic_id):
     url=DBUtil.retrieve_avatar_url(pic_id)
+    print(url)
     i = url.rindex("\\")
-    pre = str[:i]
-    fname = str[i + 1:]
+    pre = url[:i+1]
+    print(pre)
+    fname = url[i + 1:]
+    print(fname)
     return send_from_directory(pre, fname)
+
+@vpic.route("/testpic")
+def testpic():
+    pic_id = DBUtil.insert_pic_url('D:\\yue_server\\path\\' +"button9.png")
+    return str(pic_id)
+

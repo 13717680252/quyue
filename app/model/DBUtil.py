@@ -186,7 +186,7 @@ class DBUtil:
     @staticmethod
     def __util_retrieve_avatar_url(ss, args):
         try:
-            rs = ss.query(TPicUrl.pic_id).filter(TPicUrl.pic_id == args["id"]).first()
+            rs = ss.query(TPicUrl.url).filter(TPicUrl.pic_id == args["id"]).first()
         except Exception as e:
             print(e)
             return  None
@@ -761,7 +761,10 @@ class DBUtil:
         :param id: id of the activity
         :return: an activity if the id is valid or None otherwise
         '''
-        return  DBUtil.exec_query(DBUtil.__util_retrieve_activity, id=id)
+        ss = DBSession()
+        rs = DBUtil.__util_retrieve_activity(ss, id)
+        ss.close()
+        return  rs
 
 
     @staticmethod

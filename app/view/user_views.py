@@ -13,10 +13,14 @@ vuser=Blueprint('vuser',__name__)
 @vuser.route('/get_user_info/<user_id>',methods=['POST'])
 def getUserInof(user_id):
     dict={}
-    dict=DBUtil.retrieve_userinfo_by_id(id)
+    dict=DBUtil.retrieve_userinfo_by_id(user_id)
+    print(dict)
     if dict==None:
+
         dict['status'] = "0"
     else :
+        dict['date'] = dict['birthdate'].strftime('%Y-%m-%d')
+        dict["birthdate"] = ""
         dict['status']='1'
     return (json.dumps(dict))
 
@@ -40,12 +44,12 @@ def searchuser(key):
     dict2 = {'status': '1', 'result': list, 'errcode': "none"};
     return json.dumps(dict2)
 
-@vuser.route("change_user_avatar/")
+@vuser.route("/change_user_avatar")
 def change_avatar():
     c_request = request.get_data()
     dict = json.loads(c_request)
     status=DBUtil.update_user_avatar(dict["user_id"],dict["pic_id"])
-    dict2={status:"1",status:status}
+    dict2={status:"1","TOF":status}
     return json.dumps(dict2)
 
 
