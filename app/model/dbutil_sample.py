@@ -246,7 +246,7 @@ add_friends(4, ['1', '8', '9'])
 # print(pic_id)
 
 #query user's avatar id
-# url = DBUtil.retrieve_avatar_url(0)
+# url = DBUtil.retrieve_avatar_url(1)
 # print(url)
 
 
@@ -258,3 +258,6 @@ add_friends(4, ['1', '8', '9'])
 # ok = DBUtil.update_user_avatar(8, 3)
 # print(ok)
 
+# query activity by id
+# act = DBUtil.retrieve_activity_by_id('1')
+# print(act.name)
