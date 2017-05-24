@@ -229,9 +229,9 @@ class DBUtil:
 
 
     @staticmethod
-    def __util_retrieve_activity(ss, args):
+    def __util_retrieve_activity(ss, id):
         try:
-            item = ss.query(TActivity).filter(TActivity.id == args['id']).first()
+            item = ss.query(TActivity).filter(TActivity.id == id).first()
             ss.expunge(item)
             ss.commit()
         except Exception as e:
@@ -767,7 +767,10 @@ class DBUtil:
         :param id: id of the activity
         :return: an activity if the id is valid or None otherwise
         '''
-        return  DBUtil.exec_query(DBUtil.__util_retrieve_activity, id=id)
+        ss = DBSession()
+        rs = DBUtil.__util_retrieve_activity(ss, id)
+        ss.close()
+        return  rs
 
 
     @staticmethod
