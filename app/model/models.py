@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import BigInteger, Column, Date, DateTime, Integer, String, Text, text
+from sqlalchemy import BigInteger, Column, Date, DateTime, Integer, String, Table, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 
 
@@ -26,6 +26,17 @@ class TActivity(Base):
     tags = Column(String(1000), nullable=False, server_default=text("''"))
     is_canceled = Column(Integer, nullable=False)
     cancel_date = Column(DateTime)
+
+
+t_t_chat = Table(
+    't_chat', metadata,
+    Column('get_id', Integer, nullable=False),
+    Column('send_id', Integer, nullable=False),
+    Column('chat_info', String(100), nullable=False),
+    Column('chat_data', DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")),
+    Column('is_notify', Integer, server_default=text("'0'")),
+    Column('is_clear', Integer, server_default=text("'0'"))
+)
 
 
 class TCommentActivity(Base):
