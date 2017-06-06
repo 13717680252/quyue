@@ -62,7 +62,7 @@ def getPastActList(user_id):
         now = datetime.now()
         list = DBUtil.retrieve_user_activities(user_id)
         for act in list:
-            if act.is_canceled == 0 and now>act.end_date:
+            if act.is_canceled == 0 and now>act.start_date:
                 list2.append[act.id]
     except:
         exp = 'failed'
@@ -147,17 +147,20 @@ def getMemberList(activity_id):
 
 @vactivity.route("/insertactivity")
 def insertactivity():
-    s=datetime.strptime("2017-06-01 21:00:00", "%Y-%m-%d %H:%M:%S")
+    s=datetime.strptime("2017-06-09 21:00:00", "%Y-%m-%d %H:%M:%S")
     e = datetime.strptime("2017-05-31 21:00:00", "%Y-%m-%d %H:%M:%S")
-    activity = {"name": '新活动4', "publisher": 22, "group_id": 2, "description": 'a description',
+    activity = {"name": '新活动8', "publisher": 22, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
-    activity2 = {"name": '新活动5', "publisher": 22, "group_id": 2, "description": 'a description',
+                "join_ids": '', "tags": '爆菊,编程', "is_canceled": 0}
+    activity2 = {"name": '新活动9', "publisher": 22, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
-    activity3 = {"name": '新活动6', "publisher": 22, "group_id": 2, "description": 'a description',
+                "join_ids": '', "tags": '日狗,交大', "is_canceled": 0}
+    activity3 = {"name": '新活动10', "publisher": 22, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '聚餐,交友', "is_canceled": 0}
+                "join_ids": '', "tags": '交大,四道口', "is_canceled": 0}
+    activity3 = {"name": '新活动11', "publisher": 22, "group_id": 2, "description": 'a description',
+                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
+                 "join_ids": '', "tags": '智障,四道口', "is_canceled": 0}
     states,exp=DBUtil.insert_new_activity(activity)
     states, exp = DBUtil.insert_new_activity(activity2)
     states, exp = DBUtil.insert_new_activity(activity3)

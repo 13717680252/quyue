@@ -9,13 +9,13 @@ from app.model.models import TGroup,TActivity
 import json
 from app.model.DBUtil import *
 vgroup=Blueprint('vgroup',__name__)
-@vgroup.route('/get_activity_list/<group_id>')
+@vgroup.route('/get_activity_list/<group_id>',methods=['POST'])
 def getActList(group_id):
     list=DBUtil.retrieve_activitiy_by_group(group_id, datetime.now() - timedelta(days=200), 999)
     ##deal with the list
     list2=[]
     for act in list:
-        list2.append[act.id]
+        list2.append(act.id)
     return json.dumps({'status': 1, 'activity_list': list2, 'exp': 'none'})
     pass
 
@@ -24,7 +24,7 @@ def get_focused(user_id):
     group_list=DBUtil.retrieve_user_groups(user_id)
     list=[]
     for g in group_list:
-        list.append[g.id]
+        list.append(g.id)
     dict = {'status': 1, 'group_list': list, 'exp': 'none'};
     return json.dumps(dict)
 

@@ -45,6 +45,7 @@ def login():
     if ismatched:
         user_id=DBUtil.retrieve_userid_by_mail(dict['name'])
         dict2={'status':1,'userid':user_id,'errorcode':exp}
+        ##login_manager.login_user(user_id)
     else:
         dict2 = {'status': 0, 'userid': -1, 'errorcode': exp}
     return json.dumps(dict2)
