@@ -4,7 +4,7 @@ Created on 2017年4月14日
 @author: KarlMical
 '''
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import insert
 from models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson, TPicUrl, t_t_chat
@@ -356,6 +356,17 @@ class DBUtil:
         for r in rs:
             ret.append(r[0])
         return ret
+
+
+    @staticmethod
+    def __util_retrieve_pic_count(ss, args):
+        try:
+            rs = ss.query(TPicUrl).count()
+        except Exception as e:
+            print(e)
+            return -1
+
+        return rs
 
 
     @staticmethod
@@ -913,6 +924,15 @@ class DBUtil:
         :return: if success return list of send ids, else return None
         '''
         return DBUtil.exec_query_with_conn(DBUtil.__util_retrieve_chat_send_id, get_id=get_id)
+
+
+    @staticmethod
+    def retrieve_pic_count():
+        '''
+        get total picture count
+        :return: total picture count number if success, -1 if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_pic_count)
 
     #param 'args': a dict of user propertities
     #reutrn a tuple <rowid, error>
