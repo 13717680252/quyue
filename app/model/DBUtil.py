@@ -7,10 +7,10 @@ Created on 2017年4月14日
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import insert
-from models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson, TPicUrl
+from models import TUser, TGroup, TActivity, TCommentActivity, TCommnetPerson, TPicUrl, t_t_chat
 from sqlalchemy.sql.schema import Table
 from sqlalchemy.sql.expression import exists, select
-from sqlalchemy.sql.elements import or_, literal
+from sqlalchemy.sql.elements import or_, literal, and_
 import redis
 
 
@@ -286,6 +286,77 @@ class DBUtil:
         return rs
 
 
+    @staticmethod
+    def __util_retrieve_chat_info(conn, args):
+        sql = select([t_t_chat.c.chat_info, t_t_chat.c.chat_data]).\
+            where(and_(
+                t_t_chat.c.send_id == args['send_id'],
+                t_t_chat.c.get_id == args['get_id'],
+                t_t_chat.c.is_clear == 0
+                )
+            )
+        update_sql = t_t_chat.update().\
+            where(and_(
+                t_t_chat.c.send_id == args['send_id'],
+                t_t_chat.c.get_id == args['get_id'],
+                t_t_chat.c.is_clear == 0
+            )
+        ).values(is_clear=1)
+        ret = []
+        trans = conn.begin()
+        try:
+            rs = conn.execute(sql)
+            # not hit, return empty list
+            if rs.rowcount is 0:
+                return ret
+            # update the is_clear field
+            # print(update_sql)
+            conn.execute(update_sql)
+            trans.commit()
+        except Exception as e:
+            print(e)
+            trans.rollback()
+            return None
+
+        for r in rs:
+            ret.append((r['chat_info'], r['chat_data']))
+        return ret
+
+
+    @staticmethod
+    def __util_retrieve_chat_send_id(conn, args):
+        pass
+        get_id = args['get_id']
+        sql = select([t_t_chat.c.send_id]).where(
+            and_(
+                t_t_chat.c.get_id == get_id,
+                t_t_chat.c.is_notify == 0
+            )
+        )
+        update_sql = t_t_chat.update(). \
+            where(and_(
+                t_t_chat.c.get_id == get_id,
+                t_t_chat.c.is_notify == 0
+        )
+        ).values(is_notify=1)
+        ret = []
+        trans = conn.begin()
+        try:
+            rs = conn.execute(sql)
+            if rs.rowcount is 0:
+                return ret
+            # update the is_notify field
+            conn.execute(update_sql)
+            trans.commit()
+        except Exception as e:
+            print(e)
+            trans.rollback()
+            return None
+
+        for r in rs:
+            ret.append(r[0])
+        return ret
+
 
     @staticmethod
     def __util_insert_new_user(conn, args):
@@ -393,6 +464,18 @@ class DBUtil:
             return None
 
         return tpic.pic_id
+
+
+    @staticmethod
+    def __util_insert_new_chat(conn, args):
+        ins = t_t_chat.insert().values(get_id=args['get_id'], send_id=args['send_id'], chat_info=args['chat_info'])
+        try:
+            conn.execute(ins)
+        except Exception as e:
+            print(e)
+            return False
+
+        return True
 
 
     @staticmethod
@@ -810,6 +893,27 @@ class DBUtil:
         return DBUtil.exec_query(DBUtil.__util_retrieve_group, id = id)
 
 
+    @staticmethod
+    def retrieve_chat_info(get_id, send_id):
+        '''
+        retrieve all pairs for chat info that is not cleared
+        :param get_id:
+        :param send_id:
+        :return: [chat_info, chat_data] or None
+        '''
+        return DBUtil.exec_query_with_conn(DBUtil.__util_retrieve_chat_info,
+                                           get_id=get_id, send_id=send_id)
+
+
+    @staticmethod
+    def retrieve_chat_send_id(get_id):
+        '''
+        get all send id by get id and set the record's is_notify to 1
+        :param get_id:
+        :return: if success return list of send ids, else return None
+        '''
+        return DBUtil.exec_query_with_conn(DBUtil.__util_retrieve_chat_send_id, get_id=get_id)
+
     #param 'args': a dict of user propertities
     #reutrn a tuple <rowid, error>
     #'rowid' is the last user row id, if not exists, rowid is 0
@@ -873,6 +977,16 @@ class DBUtil:
         :return: id of the pic_url if success, None if failed
         '''
         return DBUtil.exec_query(DBUtil.__util_insert_pic_url, url=pic_url)
+
+
+    @staticmethod
+    def insert_new_chat(get_id, send_id, chat_info):
+        '''
+        insert a record of chat
+        :return: True if success, False if failed
+        '''
+        return DBUtil.exec_query_with_conn(DBUtil.__util_insert_new_chat,
+                                           get_id=get_id, send_id=send_id, chat_info=chat_info)
 
 
     @staticmethod
