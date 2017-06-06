@@ -273,3 +273,7 @@ add_friends(4, ['1', '8', '9'])
 # get send ids by get id
 # rs = DBUtil.retrieve_chat_send_id(5)
 # print(rs)
+
+# get total picture number
+# cnt = DBUtil.retrieve_pic_count()
+# print(cnt)
