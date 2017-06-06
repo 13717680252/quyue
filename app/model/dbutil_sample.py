@@ -261,3 +261,15 @@ add_friends(4, ['1', '8', '9'])
 # query activity by id
 # act = DBUtil.retrieve_activity_by_id('1')
 # print(act.name)
+
+# insert a new chat record
+# ok = DBUtil.insert_new_chat(5, 6, "456")
+# print(ok)
+
+# get chat info by send id & get id
+# ret = DBUtil.retrieve_chat_info(5, 6)
+# print(ret)
+
+# get send ids by get id
+# rs = DBUtil.retrieve_chat_send_id(5)
+# print(rs)
