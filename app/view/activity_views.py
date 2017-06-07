@@ -99,11 +99,15 @@ def join():
     list = [dict['activity_id']]
     user_id=dict['user_id']
     exp='none'
-    try:
-     DBUtil.join_activity(user_id, list)
-    except:
-     exp='failed'
-    dict2 = {'status': 1, 'activity_id': dict['activity_id'], 'exp':exp};
+    act=DBUtil.retrieve_activity_by_id(list[0])
+    if(act.max_num<act.cur_num):
+     try:
+      DBUtil.join_activity(user_id, list)
+     except:
+      exp='failed'
+     dict2 = {'status': 1, 'activity_id': dict['activity_id'], 'exp':exp};
+    else:
+        dict2 = {'status': -1, 'activity_id': dict['activity_id'], 'exp':"too much people"};
     return json.dumps(dict2)
 
 
@@ -169,7 +173,7 @@ def insertactivity():
 
 @vactivity.route("/testjoin")
 def testjoin():
-   DBUtil.join_activity('22',['6','7','8'])
+   DBUtil.join_activity('23',['7'])
    return "nice"
 
 @vactivity.route('/getact')

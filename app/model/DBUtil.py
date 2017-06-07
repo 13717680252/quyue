@@ -548,7 +548,8 @@ class DBUtil:
         jl.append(user_id)
         jl_str = ','.join(jl)
         try:
-            rs = ss.query(TActivity).filter(TActivity.id == act_id, TActivity.max_num >= len(jl)).update({TActivity.join_ids : jl_str}, synchronize_session=False)
+            rs = ss.query(TActivity).filter(TActivity.id == act_id, TActivity.max_num >= len(jl)).\
+                        update({TActivity.join_ids : jl_str, TActivity.cur_num : TActivity.cur_num + 1}, synchronize_session=False)
             #
             ss.commit()
         except Exception as e:

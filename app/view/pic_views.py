@@ -16,7 +16,7 @@ def uploadPic():
         png = base64.b64decode(byte)
         if(size==sys.getsizeof(png)):
          i=0
-         #retrive total pics
+         i=DBUtil.retrieve_pic_count()
          fout = open('D:\\yue_server\\path\\'+i+'.png', "wb")
          fout.write(png)
          fout.close()
