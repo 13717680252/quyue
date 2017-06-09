@@ -53,6 +53,19 @@ def change_avatar():
     dict2={status:"1","TOF":status}
     return json.dumps(dict2)
 
+
+@vuser.route("/get_user_comment_record/<user_id>")
+def get_user_comment_record(user_id):
+    list=DBUtil.retrieve_all_comments_for_user(user_id)
+    dict={}
+    i=0
+    for c in list:
+        dict[i]=c
+        i=i+1
+    dict["total"]=i
+    dict["status"]=1
+    return json.dumps(dict)
+
 @vuser.route("/get_user_recommendation_list/<user_id>")
 def recommendation(user_id):
     list = []

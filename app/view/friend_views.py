@@ -12,8 +12,7 @@ r = redis.Redis(host='localhost', port=6379,db=4)
 @vfriend.route('/get_friend_list/<user_id>',methods=['POST'])
 def getFriendList(user_id):
     if request.method == 'POST':
-        a = request.get_data()
-        dict = json.loads(a)
+
         friendlist, exp = DBUtil.retrieve_user_friendslist(user_id=user_id)
         friendlist=friendlist.strip()
         list=friendlist.split(",")
@@ -37,7 +36,6 @@ def invitation():
         text = dict['text']
         r.lpush("invitation:" + friendid, text)
         r.lpush("invitation:"+friendid, userid)
-
     return json.dumps(dict2)
 
 

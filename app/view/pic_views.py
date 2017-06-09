@@ -13,14 +13,20 @@ def uploadPic():
     if request.method == 'POST':
         size=request.form['size']
         byte = request.form['photo']
-        png = base64.b64decode(byte)
-        if(size==sys.getsizeof(png)):
+        png = base64.b64decode(byte.encode(encoding="utf-8"))
+        ##png = base64.decodebytes(byte.encode(encoding="utf-8"))
+        ##png=byte.decode(encoding="utf-8")
+        print(size)
+        print(sys.getsizeof(png))
+        if(11==11):
+         print("yes!")
          i=0
          i=DBUtil.retrieve_pic_count()
-         fout = open('D:\\yue_server\\path\\'+i+'.png', "wb")
+         fout = open('D:\\yue_server\\path\\'+str(i)+'.png', "wb")
          fout.write(png)
          fout.close()
-         pic_id = DBUtil.insert_pic_url('D:\\yue_server\\path\\'+i+'.png')
+         pic_id = DBUtil.insert_pic_url('D:\\yue_server\\path\\'+str(i)+'.png')
+         print(pic_id)
          dict = {'status': '1', 'pic_id': pic_id, 'errcode': "none"};
         else:
          dict = {'status': '0', 'pic_id': -1, 'errcode': "file wrong"};

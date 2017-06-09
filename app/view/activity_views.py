@@ -29,6 +29,7 @@ def getActDetails(activity_id):
     act_dict['is_expired']=act.is_expired
     act_dict['tags']=act.tags
     act_dict['is_canceled']=act.is_canceled
+    act_dict['pic']=DBUtil.retrieve_activity_pics(activity_id)
     if act.is_canceled==0:
         act_dict['cancel_date']=("2999-12-30 24:60:60")
     else:
@@ -79,6 +80,10 @@ def admitAct():
         actid, exp = DBUtil.insert_new_activity(dict)
 
         if actid is not 0:
+            str=dict["pic_id"]
+            list = str.strip()
+            p_list = list.split(",")
+            DBUtil.add_pics_to_activity(actid,p_list)
             print("user is created, id is '%d'" % actid)
             dict2 = {'status': '1', 'actid':actid, 'errcode': 'null'};
             list=[]

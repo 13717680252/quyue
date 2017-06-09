@@ -41,7 +41,11 @@ def focusGroup(user_id):
 
 @vgroup.route('/cancel_focus_group/<user_id>')
 def cancelFocused(user_id):
-    pass
+    a = request.get_data()
+    dict = json.loads(a)
+    status = DBUtil.unfollow_group(user_id, dict['group_id'])
+    dict2 = {'status': status, 'group_id': dict['group_id'], 'exp': 'none'};
+    return json.dumps(dict2)
 
 
 @vgroup.route('/getgroup')
