@@ -33,6 +33,7 @@ DBSession = sessionmaker(bind=engine)
 #redis key patterns
 k_user_act = "user:%s:activities"   #actviites which the user joined
 k_user_group = "user:%s:groups"     #groups which the user attention
+k_act_pic = "act:%s:pic"            #picture ids upload for an activity
 
 #redis instance
 rins = redis.Redis(host='localhost', port=6379, password='redis',db=1)
@@ -225,6 +226,21 @@ class DBUtil:
         for item in rs:
             ret.append(item[0])
         return  ret
+
+
+    @staticmethod
+    def __util_retrieve_all_comments_for_user(ss, args):
+        try:
+            pass
+            rs = ss.query(TCommnetPerson.comment_user_id, TCommnetPerson.activity_id, TCommnetPerson.content,
+                     TCommnetPerson.level, TCommnetPerson.create_date).\
+                    filter(TCommnetPerson.commented_user_id == args["user_id"], TCommnetPerson.is_deleted == 0).all()
+        except Exception as e:
+            print(e)
+            return None
+
+        # print(rs)
+        return rs
 
 
 
@@ -671,7 +687,8 @@ class DBUtil:
         if found:
             try:
                 rs = ss.query(TActivity).filter(TActivity.id == act_id).\
-                    update({TActivity.join_ids : ','.join(jl)}, synchronize_session=False)
+                    update({TActivity.join_ids : ','.join(jl), TActivity.cur_num: TActivity.cur_num - 1},
+                           synchronize_session=False)
                 ss.commit()
             except Exception as e:
                 print(e)
@@ -686,7 +703,15 @@ class DBUtil:
         return True
 
 
-    @staticmethod
+    #
+    # @staticmethod@staticmethod
+    # def __util_decrease_group_attention(ss, args):
+    #     try:
+    #         ss.query(TGroup).filter(TGroup.id == args['group_id']).\
+    #             update({TGroup.attention_count : TGroup.attention_count - 1}, synchronize_session=False)
+    #     except Exception as e:
+    #         print(e)
+
     def flush_redis():
         '''
         remove all data of redis database, only for test
@@ -856,6 +881,17 @@ class DBUtil:
 
 
     @staticmethod
+    def retrieve_all_comments_for_user(user_id):
+        '''
+        get all comments for the user
+        :param user_id: id of user
+        :return: a list of [ TCommnetPerson.comment_user_id, TCommnetPerson.activity_id, TCommnetPerson.content,
+                     TCommnetPerson.level, TCommnetPerson.create_date ]
+        '''
+        return DBUtil.exec_query(DBUtil.__util_retrieve_all_comments_for_user, user_id=user_id)
+
+
+    @staticmethod
     def retrieve_activity_by_id(id):
         '''
         retrieve an activity by its id
@@ -934,6 +970,29 @@ class DBUtil:
         :return: total picture count number if success, -1 if failed
         '''
         return DBUtil.exec_query(DBUtil.__util_retrieve_pic_count)
+
+
+    @staticmethod
+    def retrieve_activity_pics(act_id):
+        '''
+        retrieve pictures for an activity
+        :param act_id: id of an activity
+        :return: a list of pic ids
+        '''
+        k = k_act_pic % act_id
+        return DBUtil.__decode_list_with_utf8(rins.smembers(k))
+
+
+    @staticmethod
+    def add_pics_to_activity(act_id, pic_ids):
+        '''
+        add pictures for an activity
+        :param act_id: id of the activity
+        :param pic_ids: ids of picture
+        :return: added pictures numbers
+        '''
+        k = k_act_pic % act_id
+        return rins.sadd(k, *pic_ids)
 
     #param 'args': a dict of user propertities
     #reutrn a tuple <rowid, error>
@@ -1095,6 +1154,21 @@ class DBUtil:
         :return: True if update success , Flase if failed
         '''
         return DBUtil.exec_query(DBUtil.__util_update_user_avatar, user_id=user_id, avatar_id=avatar_id)
+
+
+    @staticmethod
+    def unfollow_group(user_id, group_id):
+        '''
+        :param user_id: id of user
+        :param group_id: id of group
+        :return: True if success, false otherwise
+        '''
+        k = k_user_group % user_id
+        # decrease group attention count
+        ss = DBSession()
+        DBUtil.__util_increase_group_attention(ss, group_id, -1)
+        ss.close()
+        return rins.srem(k, group_id) == 1
 
 
     @staticmethod
