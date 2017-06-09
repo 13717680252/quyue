@@ -15,7 +15,7 @@ def check_user_name(name):
     if isExisted:
         print("'%s' is a duplicated user name!" % name);
     else:
-        print("'%s' is not an existed user name!" % name, exp);
+        print("'%s' is not an existed user name!" % name, exp)
 
 def check_user_phone(phone):  
     #check whether user phone number '123456' is already existd
@@ -23,7 +23,7 @@ def check_user_phone(phone):
     if isExisted:
         print("'%s' is a duplicated user phone number!" % phone)
     else:
-        print("'%s' is not an existed user phone number!" % phone, exp);
+        print("'%s' is not an existed user phone number!" % phone, exp)
 
 def check_user_mail(mail):
     #check whether user mail address '123@qq.com' is already existd
@@ -188,7 +188,7 @@ add_friends(4, ['1', '8', '9'])
 # check_mail_activate("153@qq.com")
 
 # # join an actitities
-# join_activity('4', ['2', '1'])
+# join_activity('14', ['2', '1'])
 
 # #get activities which user with id '4' joined
 # get_user_activities('4')
@@ -198,6 +198,7 @@ add_friends(4, ['1', '8', '9'])
 
 # make attention to groups
 # print(DBUtil.add_user_group('4', ['1', '2']))
+
 
 # retrieve activities 5 days before by group which those belong to
 # print(DBUtil.retrieve_activitiy_by_group('1', datetime.now() - timedelta(days=5), 5))
@@ -239,7 +240,7 @@ add_friends(4, ['1', '8', '9'])
 # print(ps)
 
 # quit activities
-# DBUtil.remove_user_activities('4', ['1', '2'])
+# DBUtil.remove_user_activities('1', ['1', '2', '3'])
 
 #insert an avatar url
 # pic_id = DBUtil.insert_pic_url("abc.com")
@@ -277,3 +278,23 @@ add_friends(4, ['1', '8', '9'])
 # get total picture number
 # cnt = DBUtil.retrieve_pic_count()
 # print(cnt)
+
+
+# unfollow group
+# ok = DBUtil.unfollow_group(4, 1)
+# print(ok)
+
+
+# get comments for an user
+# rs = DBUtil.retrieve_all_comments_for_user(8)
+# if rs:
+#     print(rs)
+
+
+# add pictures for an activity
+# cnt =DBUtil.add_pics_to_activity(4, [5, 6, 7])
+# print(cnt)
+
+# get pictures for an activity
+# pic_ids = DBUtil.retrieve_activity_pics(4)
+# print(pic_ids)
