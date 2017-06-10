@@ -39,7 +39,7 @@ def focusGroup(user_id):
 
 
 
-@vgroup.route('/cancel_focus_group/<user_id>')
+@vgroup.route('/cancel_focus_group/<user_id>',methods=['POST'])
 def cancelFocused(user_id):
     a = request.get_data()
     dict = json.loads(a)
@@ -50,9 +50,7 @@ def cancelFocused(user_id):
 
 @vgroup.route('/getgroup')
 def getgroup():
-    list = DBUtil.retrieve_activitiy_by_group(2, datetime.now() - timedelta(days=200), 999)
-    for act in list:
-       print(act.id)
+    status = DBUtil.add_user_group(22, ['2','3'])
     return ""
 
 

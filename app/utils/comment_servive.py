@@ -4,9 +4,9 @@ def user_comment(args):
     level=args['level']
     userinfo=DBUtil.retrieve_userinfo_by_id(user)
     if level==1:
-     userinfo['credit']=userinfo['credit']-5
+     userinfo['credict']=userinfo['credict']-5
     else:
-     userinfo['credit'] = userinfo['credit'] +5*level
+     userinfo['credict'] = userinfo['credict'] +5*level
     states,exp=DBUtil.update_userinfo(user,userinfo)
     return states
 
@@ -19,9 +19,9 @@ def activity_comment(args):
     for i in list:
         userinfo = DBUtil.retrieve_userinfo_by_id(i)
         if level == 1:
-            userinfo['credit'] = userinfo['credit'] - 1
+            userinfo['credict'] = userinfo['credict'] - 1
         else:
-            userinfo['credit'] = userinfo['credit'] + 1 * level
+            userinfo['credict'] = userinfo['credict'] + 1 * level
         state, exp = DBUtil.update_userinfo(i, userinfo)
         states.append(state)
     return states

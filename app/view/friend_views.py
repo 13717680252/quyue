@@ -46,8 +46,8 @@ def reply_invitation():
         dict = json.loads(a)
         invitor=dict['invitor']
         receiver=[dict['receiver']]
-        DBUtil.update_user_friend(receiver, invitor)
-        status, exp = DBUtil.update_user_friend(invitor,receiver)
+        DBUtil.update_user_friends(receiver, [str(invitor)])
+        status, exp = DBUtil.update_user_friends(invitor,[str(receiver)])
         if  status=='ok':
             print("ok!" )
             dict2 = { 'status': status, 'userid':invitor,'errcode': 'null'};
@@ -59,12 +59,16 @@ def reply_invitation():
 
 @vfriend.route('/testfriend')
 def test():
-        userid = '1'
-        friendid = '22'
-        text = "caonima"
-        r.lpush("invitation:"+friendid, text)
-        r.lpush("invitation:"+friendid, friendid)
-        r.lpush("changing:22", "1995-09-09")
-        r.lpush("changing:22" ,"description")
-        r.lpush("changing:22", "1")
+        # userid = '1'
+        # friendid = '22'
+        # text = "caonima"
+        # r.lpush("invitation:"+friendid, text)
+        # r.lpush("invitation:"+friendid, friendid)
+        # r.lpush("changing:22", "1995-09-09")
+        # r.lpush("changing:22" ,"description")
+        # r.lpush("changing:22", "1")
+        DBUtil.update_user_friends(22, ['24'])
+        DBUtil.update_user_friends(24, ['22'])
+        DBUtil.update_user_friends(22, ['23'])
+        DBUtil.update_user_friends(23, ['22'])
         return ("successful")

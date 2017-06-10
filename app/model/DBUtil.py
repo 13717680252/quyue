@@ -284,8 +284,6 @@ class DBUtil:
         gid = args['group_id']
         limit = args['limit']
         after_date = args['after_date']
-        print(after_date)
-        print(type(after_date))
         try:
             rs = ss.query(TActivity).filter(TActivity.group_id == gid, TActivity.create_date >= after_date).limit(limit).all()
             ss.expunge_all()

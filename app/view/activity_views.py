@@ -156,18 +156,18 @@ def getMemberList(activity_id):
 
 @vactivity.route("/insertactivity")
 def insertactivity():
-    s=datetime.strptime("2017-06-09 21:00:00", "%Y-%m-%d %H:%M:%S")
-    e = datetime.strptime("2017-05-31 21:00:00", "%Y-%m-%d %H:%M:%S")
-    activity = {"name": '新活动8', "publisher": 22, "group_id": 2, "description": 'a description',
+    s=datetime.strptime("2017-06-20 21:00:00", "%Y-%m-%d %H:%M:%S")
+    e = datetime.strptime("2017-06-16 21:00:00", "%Y-%m-%d %H:%M:%S")
+    activity = {"name": '新活动20', "publisher": 24, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '爆菊,编程', "is_canceled": 0}
-    activity2 = {"name": '新活动9', "publisher": 22, "group_id": 2, "description": 'a description',
+                "join_ids": '', "tags": '交大,编程', "is_canceled": 0}
+    activity2 = {"name": '新活动21', "publisher": 24, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '日狗,交大', "is_canceled": 0}
-    activity3 = {"name": '新活动10', "publisher": 22, "group_id": 2, "description": 'a description',
+                "join_ids": '', "tags": '交大,口交', "is_canceled": 0}
+    activity3 = {"name": '新活动22', "publisher": 24, "group_id": 2, "description": 'a description',
                 "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
-                "join_ids": '', "tags": '交大,四道口', "is_canceled": 0}
-    activity3 = {"name": '新活动11', "publisher": 22, "group_id": 2, "description": 'a description',
+                "join_ids": '', "tags": '爆菊,四道口', "is_canceled": 0}
+    activity4 = {"name": '新活动23', "publisher": 24, "group_id": 2, "description": 'a description',
                  "start_date": s, "end_date": e, "min_num": 2, "max_num": 10, "cur_num": 1,
                  "join_ids": '', "tags": '智障,四道口', "is_canceled": 0}
     states,exp=DBUtil.insert_new_activity(activity)
@@ -178,11 +178,22 @@ def insertactivity():
 
 @vactivity.route("/testjoin")
 def testjoin():
-   DBUtil.join_activity('23',['7'])
+   DBUtil.join_activity('22',['15','16'])
+   # DBUtil.join_activity('23', [ '13', '14'])
+   # DBUtil.join_activity('24', ['12', '14'])
    return "nice"
 
 @vactivity.route('/getact')
 def getact():
-    act = DBUtil.retrieve_activity_by_id(2)
-    print(act)
+    list, ret = DBUtil.retrieve_user_friendslist(22)
+    str = list.strip()
+    list = str.split(",")
+    actlist = []
+    for u in list:
+        alist = DBUtil.retrieve_user_activities(u)
+        for a in alist:
+         if a.id not in actlist:
+            actlist.append(a.id)
+    dict = {'status': '1', 'activity': actlist, 'errcode': "none"};
+    print(dict)
     return ""

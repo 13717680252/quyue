@@ -46,7 +46,8 @@ def comingactivity(user_id):
     now = datetime.now()
     for act in list:
         time= datetime.datetime.strftime(act.start_date, '%Y-%m-%d %H:%M:%S')
-        now.strftime('%Y-%m-%d %H:%M:%S')
+        timenow=now.strftime('%Y-%m-%d %H:%M:%S')
+
     return("successful")
 
 

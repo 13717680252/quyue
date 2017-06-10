@@ -124,9 +124,8 @@ def generateRules( L, supportData, minConf=0.7 ):
 
 def GETData(myDat):                                  # 导入数据集
     D = [set(var) for var in myDat]
-    print(D)
     L, suppData = apriori( myDat, 0.6 )                     # 选择频繁项集
-    print(u"频繁项集L：", L)
+    #print(u"频繁项集L：", L)
     print(u"所有候选项集的支持度信息：", suppData)
     ##rules = generateRules( L, suppData, minConf=0.7 )
     ##print('rules:\n', rules)

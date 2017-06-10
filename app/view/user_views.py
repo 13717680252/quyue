@@ -20,15 +20,33 @@ def getUserInof(user_id):
 
         dict['status'] = "0"
     else :
-        dict['date'] = dict['birthdate'].strftime('%Y-%m-%d')
-        dict["birthdate"] = ""
+        dict["birthdate"]  = dict['birthdate'].strftime('%Y-%m-%d')
         dict['status']='1'
+        list,error=DBUtil.retrieve_user_friendslist(user_id)
+        list=list.strip()
+        list = list.split(",")
+        list2=[]
+        for i in list:
+            if i not in list2:
+                list2.append(i)
+        dict["friendlist"]=list2
+    print(dict)
     return (json.dumps(dict))
 
 
-@vuser.route('/get_credit_list/<user_id>')
-def getCreditList(user_id):
-    pass
+@vuser.route('/get_user_friend_activities/<user_id>',methods=['POST'])
+def get_friend_activities(user_id):
+    list,ret=DBUtil.retrieve_user_friendslist(user_id)
+    str = list.strip()
+    list= str.split(",")
+    actlist=[]
+    for u in list:
+        alist = DBUtil.retrieve_user_activities(u)
+        for a in alist:
+         if a.id not in actlist:
+            actlist.append(a.id)
+    dict = {'status': '1', 'activity': actlist, 'errcode': "none"};
+    return json.dumps(dict)
 
 
 @vuser.route('/change_my_info/<user_id>',methods=['POST'])
@@ -45,7 +63,7 @@ def searchuser(key):
     dict2 = {'status': '1', 'result': list, 'errcode': "none"};
     return json.dumps(dict2)
 
-@vuser.route("/change_user_avatar")
+@vuser.route("/change_user_avatar",methods=['POST'])
 def change_avatar():
     c_request = request.get_data()
     dict = json.loads(c_request)
@@ -54,91 +72,136 @@ def change_avatar():
     return json.dumps(dict2)
 
 
-@vuser.route("/get_user_comment_record/<user_id>")
+@vuser.route("/get_user_comment_record/<user_id>",methods=['POST'])
 def get_user_comment_record(user_id):
-    list=DBUtil.retrieve_all_comments_for_user(user_id)
-    dict={}
-    i=0
-    for c in list:
-        dict[i]=c
-        i=i+1
-    dict["total"]=i
-    dict["status"]=1
+    rlist = DBUtil.retrieve_all_comments_for_user(user_id)
+    dict = {}
+    i = 0
+    print(rlist)
+    for c in rlist:
+        print(type(c))
+        # c[4]=datetime.datetime.strftime(c[4], '%Y-%m-%d %H:%M:%S')
+        # dict[i] = c
+        clist = list(c)
+        clist[4] = datetime.datetime.strftime(clist[4], '%Y-%m-%d %H:%M:%S')
+        dict[i] = clist
+        i = i + 1
+    dict["total"] = i
+    dict["status"] = 1
     return json.dumps(dict)
 
-@vuser.route("/get_user_recommendation_list/<user_id>")
+@vuser.route("/get_user_recommendation_list/<user_id>",methods=['POST'])
 def recommendation(user_id):
-    list = []
+    alist = []
     exp = 'none'
     id_list = []
-    tag_list=[]
-    now = datetime.now()
+    tag_list = []
+    now = datetime.datetime.now()
     try:
-        list = DBUtil.retrieve_user_activities(user_id)
-        for act in list:
-            if act.is_canceled == 0 and now<act.end_date:
+        alist = DBUtil.retrieve_user_activities(22)
+        for act in alist:
+            if act.is_canceled == 0 and now < act.end_date:
                 id_list.append(act.id)
                 tag_list.append(act.tags.strip().split(","))
 
     except:
-        exp='failed'
+        exp = 'failed'
     dictlist = GETData(tag_list)
     slist = dictlist.keys()
+    print("dictlist.keys()")
+    print(slist)
     labellist = []
-    for set in slist:
-        if dictlist[set] > 0.6:
-            for i in set:
+    for mset in slist:
+        if dictlist[mset] >= 0.5:
+            for i in mset:
                 labellist.append(i)
                 break
+    print(labellist)
     labellist = list(set(labellist))
     l2 = []
     [l2.append(i) for i in labellist if not i in l2]
-    joinedlist=DBUtil.retrieve_user_activities(user_id)
-    grouplist=DBUtil.retrieve_user_groups(user_id)
-    alllist=[]
+    joinedlist = DBUtil.retrieve_user_activities(22)
+    joinedidlist = []
+    for i in joinedlist:
+        joinedidlist.append(i.id)
+    print(joinedidlist)
+    grouplist = DBUtil.retrieve_user_groups(22)
+    alllist = []
     for g in grouplist:
-        alllist.append(DBUtil.retrieve_activitiy_by_group(g.id,datetime.now() - timedelta(days=2), 999))
-    actlist=[]
+        alllist = alllist + (DBUtil.retrieve_activitiy_by_group(g.id, datetime.datetime.now() - timedelta(days=2), 999))
+    actlist = []
     for a in alllist:
-        if a not in actlist and a.is_canceled==0 and a not in joinedlist:
+        if a not in actlist and a.is_canceled == 0 and a.id not in joinedidlist:
             actlist.append(a)
-    newlist=[]
+    newlist = []
     for act in actlist:
         str = act.tags.strip()
         c_taglist = str.split(",")
         for t in c_taglist:
             if t in l2:
                 newlist.append(act)
-    idlist=[]
+    idlist = []
     for act in newlist:
         if act.id not in idlist:
             idlist.append(act.id)
-    dict2 = {'status': '1', 'result': idlist, 'errcode': "none"};
+    dict2 = {'status': '1', 'result': idlist, 'errcode': exp};
     return json.dumps(dict2)
 
 
 @vuser.route("/testrecom")
 def testrecom():
-    id_list = []
-    tag_list = []
-    list=DBUtil.retrieve_activitiy_by_group(2, datetime.datetime.now() - timedelta(days=200), 999)
-    for act in list:
-        if act.is_canceled == 0 :
-            id_list.append(act.id)
-            tag_list.append(act.tags.strip().split(","))
-    dictlist=GETData(tag_list)
-    slist=dictlist.keys()
-    labellist=[]
-    for set in slist:
-        if dictlist[set]>0.6:
-         for i in set:
-             labellist.append(i)
-             break
-    print(labellist)
-    print(type(labellist[0]))
-    l2 = []
-    [l2.append(i) for i in labellist if not i in l2]
-    print(l2)
-    return("fuck")
+        alist = []
+        exp = 'none'
+        id_list = []
+        tag_list = []
+        now = datetime.datetime.now()
+        try:
+            alist = DBUtil.retrieve_user_activities(22)
+            for act in alist:
+                if act.is_canceled == 0 and now < act.end_date:
+                    id_list.append(act.id)
+                    tag_list.append(act.tags.strip().split(","))
 
+        except:
+            exp = 'failed'
+        dictlist = GETData(tag_list)
+        slist = dictlist.keys()
+        print("dictlist.keys()")
+        print(slist)
+        labellist = []
+        for mset in slist:
+            if dictlist[mset] >= 0.5:
+                for i in mset:
+                    labellist.append(i)
+                    break
+        print(labellist)
+        labellist = list(set(labellist))
+        l2 = []
+        [l2.append(i) for i in labellist if not i in l2]
+        joinedlist = DBUtil.retrieve_user_activities(22)
+        joinedidlist=[]
+        for i in joinedlist:
+            joinedidlist.append(i.id)
+        print(joinedidlist)
+        grouplist = DBUtil.retrieve_user_groups(22)
+        alllist = []
+        for g in grouplist:
+            alllist=alllist+(DBUtil.retrieve_activitiy_by_group(g.id, datetime.datetime.now() - timedelta(days=2), 999))
+        actlist = []
+        for a in alllist:
+            if a not in actlist and a.is_canceled == 0 and a.id not in joinedidlist:
+                actlist.append(a)
+        newlist = []
+        for act in actlist:
+            str = act.tags.strip()
+            c_taglist = str.split(",")
+            for t in c_taglist:
+                if t in l2:
+                    newlist.append(act)
+        idlist = []
+        for act in newlist:
+            if act.id not in idlist:
+                idlist.append(act.id)
+        print(idlist)
+        return("sb")
 
