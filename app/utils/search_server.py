@@ -4,13 +4,15 @@ import datetime
 import re
 from datetime import  timedelta
 def searchactivity(groupid,lables,keyword):
-    list = DBUtil.retrieve_activitiy_by_group(groupid, datetime.now() - timedelta(days=200), 999)
+    list = DBUtil.retrieve_activitiy_by_group(groupid, datetime.datetime.now() - timedelta(days=200), 999)
     idlist=[]
     newlist=[]
     for act in list:
-        idlist.append[act.id]
+        idlist.append(act.id)
     for i in idlist:
         act = DBUtil.retrieve_activity_by_id(i)
+        if keyword in act.name:
+            newlist.append(i)
         str = act.tags.strip()
         c_taglist = str.split(",")
         for j in c_taglist:
@@ -23,7 +25,7 @@ def searchactivity(groupid,lables,keyword):
     return result
 
 def searchfriend(keyword):
-    list=DBUtil.retrieve_all_userid
+    list=DBUtil.retrieve_all_userid()
     result=[]
     for user in list:
         dict = DBUtil.retrieve_userinfo_by_id(user)

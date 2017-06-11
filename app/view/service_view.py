@@ -12,17 +12,32 @@ vservice = Blueprint('vservice', __name__)
 r = redis.Redis(host='localhost', port=6379,db=4)
 @vservice.route('/invitation/<user_id>',methods=['POST'])
 def invatation_service(user_id):
-    friend_id=r.lpop("invitation:" + user_id)
-    text=r.lpop("invitation:" + user_id)
-    dict={}
-    if friend_id is None:
-        dict['status'] = '0';
-
-    else:
-        dict['friend_id'] = str(friend_id, "utf-8")
-        dict['text'] = str(text, "utf-8")
-        dict['status']='1'
+    length=r.llen("invitation:" + user_id)
+    dict = {}
+    idlist=[]
+    textlist=[]
+    for i in length:
+     friend_id=str(r.lpop("invitation:" + user_id),"utf-8")
+     text=str(r.lpop("invitation:" + user_id),"utf-8")
+     if(friend_id not in idlist):
+         idlist.append(friend_id)
+         textlist.append(text)
+    dict["id"]=idlist
+    dict["text"]=textlist
+    dict['numbers'] = len(idlist)
+    dict['status']='1'
     return json.dumps(dict)
+
+
+@vservice.route('/invitation_num/<user_id>')
+def invatation_nums(user_id):
+    dict={}
+    length=r.llen("invitation:" + user_id)
+    dict['numbers'] =length
+    print(dict['numbers'] )
+    dict['status']='1'
+    return ("yes")
+
 
 @vservice.route('/changedescription/<user_id>',methods=['POST'])
 def change_description(user_id):
