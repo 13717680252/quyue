@@ -48,9 +48,17 @@ def cancelFocused(user_id):
     return json.dumps(dict2)
 
 
-@vgroup.route('/getgroup')
-def getgroup():
-    status = DBUtil.add_user_group(22, ['2','3'])
-    return ""
+@vgroup.route('/getgroup/<group_id>',methods=['POST'])
+def getgroup(group_id):
+    group = DBUtil.retrieve_group_by_id(group_id)
+    group_dict={}
+    group_dict['name'] = group.name
+    group_dict['id'] = group.id
+    group_dict['description'] = group.description
+    group_dict['focus_count']=group.attention_count
+    group_dict['act_count']=group.activetity_count
+    group_dict['status']=1
+    group_dict['exp']='none'
+    return json.dumps(group_dict)
 
 

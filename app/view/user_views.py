@@ -80,8 +80,6 @@ def get_user_comment_record(user_id):
     print(rlist)
     for c in rlist:
         print(type(c))
-        # c[4]=datetime.datetime.strftime(c[4], '%Y-%m-%d %H:%M:%S')
-        # dict[i] = c
         clist = list(c)
         clist[4] = datetime.datetime.strftime(clist[4], '%Y-%m-%d %H:%M:%S')
         dict[i] = clist

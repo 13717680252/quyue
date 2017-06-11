@@ -12,6 +12,7 @@ def register():
     if request.method == 'POST':
         a = request.get_data()
         dict = json.loads(a)
+        dict['avatar']=4
         isexcited,exp=DBUtil.check_user_mail_duplicated(dict['mail'])
         isexcited2,exp=DBUtil.check_user_name_duplicated(dict['name'])
         isexcited3,exp=DBUtil.check_user_phone_duplicated(dict['phone'])
