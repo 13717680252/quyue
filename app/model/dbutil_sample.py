@@ -298,3 +298,15 @@ add_friends(4, ['1', '8', '9'])
 # get pictures for an activity
 # pic_ids = DBUtil.retrieve_activity_pics(4)
 # print(pic_ids)
+
+# cancel an activity
+# rs = DBUtil.cancel_activity(1)
+# print(rs)
+
+# update activity description
+# ok = DBUtil.update_activity_description(1, "new des")
+# print(ok)
+
+# update max nubmer of an activity
+# ok = DBUtil.update_activity_max_count(1, 300)
+# print(ok)
