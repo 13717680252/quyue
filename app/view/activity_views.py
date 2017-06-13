@@ -145,7 +145,7 @@ def searchact():
 
 
 
-@vactivity.route('/get_member_list/<activity_id>')
+@vactivity.route('/get_member_list/<activity_id>',methods=['POST'])
 def getMemberList(activity_id):
     list=DBUtil.retrieve_joined_people_of_activity(activity_id)
     if list!=None:
@@ -197,3 +197,14 @@ def getact():
     dict = {'status': '1', 'activity': actlist, 'errcode': "none"};
     print(dict)
     return ""
+
+@vactivity.route("/change_activity/<act_id>",methods=['POST'])
+def change_activity(act_id):
+    c_request = request.get_data()
+    dict = json.loads(c_request)
+    if dict["description"]!=None:
+      DBUtil.update_activity_description(act_id,dict["description"])
+    if  dict["count"]!=None:
+      DBUtil.update_activity_max_count(act_id,dict["count"])
+    dict = {'status': '1', 'errcode': "none"};
+    return(json.dumps(dict))

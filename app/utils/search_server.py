@@ -29,7 +29,7 @@ def searchfriend(keyword):
     result=[]
     for user in list:
         dict = DBUtil.retrieve_userinfo_by_id(user)
-        if(keyword in dict['phone']or keyword in dict['mail'] or keyword in['name']):
+        if(keyword in dict['phone']or keyword in dict['mail'] or keyword in dict['name']):
             result.append(user)
     return(result)
 

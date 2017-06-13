@@ -81,6 +81,7 @@ def get_user_comment_record(user_id):
     for c in rlist:
         print(type(c))
         clist = list(c)
+        clist[1]=DBUtil.retrieve_activity_by_id(clist[1]).id
         clist[4] = datetime.datetime.strftime(clist[4], '%Y-%m-%d %H:%M:%S')
         dict[i] = clist
         i = i + 1

@@ -25,7 +25,7 @@ def getFriendList(user_id):
 def sendText():
     return('succeed2')
 
-@vfriend.route('/send_friend_invitation')
+@vfriend.route('/send_friend_invitation',methods=['POST'])
 def invitation():
     dict2 = {'status': '1', 'errcode': "none"};
     if request.method == 'POST':

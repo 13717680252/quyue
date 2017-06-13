@@ -118,6 +118,22 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_cancel_activity(ss, args):
+        try:
+            rs = ss.query(TActivity).filter(TActivity.id == args['act_id'], TActivity.is_canceled == 0).\
+                update({TActivity.is_canceled : 1, TActivity.cancel_date : datetime.now()}, synchronize_session=False)
+            # print(rs)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+        if rs is not None and rs is 1:
+            return True
+        return False
+
+
+    @staticmethod
     def __util_retrieve_userid_by_name(ss, args):
         try:
             rs = ss.query(TUser.id).filter(TUser.name == args['name']).limit(1).first()
@@ -170,6 +186,7 @@ class DBUtil:
         if rs is None:
             return None
         d = {}
+        d[id]=args['id']
         d['name'] = rs[0]
         d['mail'] = rs[1]
         d['act_v'] = rs[2]
@@ -284,6 +301,8 @@ class DBUtil:
         gid = args['group_id']
         limit = args['limit']
         after_date = args['after_date']
+        print(after_date)
+        print(type(after_date))
         try:
             rs = ss.query(TActivity).filter(TActivity.group_id == gid, TActivity.create_date >= after_date).limit(limit).all()
             ss.expunge_all()
@@ -657,6 +676,36 @@ class DBUtil:
 
 
     @staticmethod
+    def __util_update_activity_description(ss, args):
+        try:
+            rs = ss.query(TActivity).filter(TActivity.id == args['act_id']).\
+                update({TActivity.description : args['description']}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+        if rs is not None and rs is 1:
+            return True
+        return False
+
+
+    @staticmethod
+    def __util_update_activity_max_count(ss, args):
+        try:
+            rs = ss.query(TActivity).filter(TActivity.id == args['act_id']).\
+                update({TActivity.max_num : args['number']}, synchronize_session=False)
+            ss.commit()
+        except Exception as e:
+            print(e)
+            ss.rollback()
+            return False
+        if rs is not None and rs is 1:
+            return True
+        return False
+
+
+    @staticmethod
     def __util_delete_joined_user_of_activity(ss, act_id, user_id):
         '''
         remove user from the activity
@@ -705,6 +754,7 @@ class DBUtil:
     #     except Exception as e:
     #         print(e)
 
+    @staticmethod
     def flush_redis():
         '''
         remove all data of redis database, only for test
@@ -761,6 +811,16 @@ class DBUtil:
             'error' is the exception when executing the query in the database, None means no exception
         '''
         return DBUtil.exec_query(DBUtil.__util_check_mail_activate, mail=mail)
+
+
+    @staticmethod
+    def cancel_activity(act_id):
+        '''
+        cancel an activity
+        :param act_id: id of an activity
+        :return: True if success, False ohterwise
+        '''
+        return DBUtil.exec_query(DBUtil.__util_cancel_activity, act_id=act_id)
 
 
     @staticmethod
@@ -1147,6 +1207,27 @@ class DBUtil:
         :return: True if update success , Flase if failed
         '''
         return DBUtil.exec_query(DBUtil.__util_update_user_avatar, user_id=user_id, avatar_id=avatar_id)
+
+
+    @staticmethod
+    def update_activity_description(act_id, description):
+        '''
+        :param act_id:
+        :param description:
+        :return: True if success, False ohterwise
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_activity_description, act_id=act_id, description=description)
+
+
+    @staticmethod
+    def update_activity_max_count(act_id, number):
+        '''
+        update activity's max count
+        :param act_id: id of an activity
+        :param number: max nubmer
+        :return: True if success, False if failed
+        '''
+        return DBUtil.exec_query(DBUtil.__util_update_activity_max_count, act_id=act_id, number=number)
 
 
     @staticmethod
